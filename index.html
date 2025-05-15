@@ -16,6 +16,10 @@
     }
     .controls {
       margin-bottom: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
     }
     .grid-container {
       display: grid;
@@ -55,14 +59,17 @@
       object-fit: contain;
       display: block;
     }
-    .cell select {
-      font-size: 0.5vw;
-      width: 100%;
-    }
     button {
-      margin-right: 6px;
       padding: 4px 8px;
       font-size: 12px;
+      cursor: pointer;
+    }
+    .color-btn {
+      width: 20px;
+      height: 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -73,29 +80,30 @@
   <button id="mergeBtn">選択セルを結合</button>
   <button id="splitBtn">選択セルを分割</button>
   <button id="uploadImageBtn">画像を添付</button>
+
+  <!-- カラーボタン -->
+  <button class="color-btn" style="background-color:#f28b82;" data-color="#f28b82"></button>
+  <button class="color-btn" style="background-color:#fbbc04;" data-color="#fbbc04"></button>
+  <button class="color-btn" style="background-color:#fff475;" data-color="#fff475"></button>
+  <button class="color-btn" style="background-color:#ccff90;" data-color="#ccff90"></button>
+  <button class="color-btn" style="background-color:#a7ffeb;" data-color="#a7ffeb"></button>
+  <button class="color-btn" style="background-color:#d7aefb;" data-color="#d7aefb"></button>
+  <button class="color-btn" style="background-color:#e0e0e0;" data-color="#e0e0e0"></button>
+
   <input type="file" id="imageInput" accept="image/*" style="display: none;" />
 </div>
+
 <div class="grid-container" id="grid"></div>
 
 <script>
   const grid = document.getElementById("grid");
   const imageInput = document.getElementById("imageInput");
 
-  const colorOptions = [
-    { name: "なし", value: "" },
-    { name: "赤", value: "#f28b82" },
-    { name: "橙", value: "#fbbc04" },
-    { name: "黄", value: "#fff475" },
-    { name: "緑", value: "#ccff90" },
-    { name: "青", value: "#a7ffeb" },
-    { name: "紫", value: "#d7aefb" },
-    { name: "灰", value: "#e0e0e0" },
-  ];
-
   const cells = [];
   const selectedCells = new Set();
   const hiddenMap = {};
 
+  // グリッド生成
   for (let row = 0; row < 10; row++) {
     for (let col = 0; col < 20; col++) {
       const cell = document.createElement("div");
@@ -104,25 +112,11 @@
       cell.dataset.col = col;
 
       const textarea = document.createElement("textarea");
-
       const img = document.createElement("img");
       img.style.display = "none";
 
-      const colorSelect = document.createElement("select");
-      colorOptions.forEach(opt => {
-        const option = document.createElement("option");
-        option.textContent = opt.name;
-        option.value = opt.value;
-        colorSelect.appendChild(option);
-      });
-
-      colorSelect.addEventListener("change", () => {
-        cell.style.backgroundColor = colorSelect.value;
-      });
-
       cell.appendChild(textarea);
       cell.appendChild(img);
-      cell.appendChild(colorSelect);
 
       cell.addEventListener("click", (e) => {
         const key = `${row},${col}`;
@@ -151,7 +145,8 @@
     return cells.find(c => c.row === row && c.col === col);
   }
 
-  function mergeCells() {
+  // セル結合
+  document.getElementById("mergeBtn").addEventListener("click", () => {
     if (selectedCells.size < 2) return alert("2つ以上のセルを選択してください");
 
     const coords = [...selectedCells].map(c => c.split(',').map(Number));
@@ -181,9 +176,10 @@
 
     selectedCells.clear();
     document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-  }
+  });
 
-  function splitCell() {
+  // セル分離
+  document.getElementById("splitBtn").addEventListener("click", () => {
     if (selectedCells.size !== 1) return alert("1つの結合セルを選択してください");
     const key = [...selectedCells][0];
     const [row, col] = key.split(',').map(Number);
@@ -206,11 +202,9 @@
     delete hiddenMap[key];
     selectedCells.clear();
     document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-  }
+  });
 
-  document.getElementById("mergeBtn").addEventListener("click", mergeCells);
-  document.getElementById("splitBtn").addEventListener("click", splitCell);
-
+  // 画像添付
   document.getElementById("uploadImageBtn").addEventListener("click", () => {
     if (selectedCells.size !== 1) {
       alert("画像は1つのセルにだけ添付できます。1セルのみ選択してください。");
@@ -232,6 +226,20 @@
     };
     reader.readAsDataURL(file);
     imageInput.value = "";
+  });
+
+  // 色変更ボタン
+  document.querySelectorAll(".color-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const color = btn.dataset.color;
+      selectedCells.forEach(key => {
+        const [row, col] = key.split(',').map(Number);
+        const cell = getCell(row, col).element;
+        const textarea = cell.querySelector("textarea");
+        cell.style.backgroundColor = color;
+        if (textarea) textarea.style.backgroundColor = color;
+      });
+    });
   });
 </script>
 
