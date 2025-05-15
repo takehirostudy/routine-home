@@ -5,13 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>目標管理ホーム</title>
   <style>
+    body {
+      margin: 0;
+      padding: 10px;
+      font-family: sans-serif;
+      box-sizing: border-box;
+    }
+    h2 {
+      font-size: 18px;
+    }
+    .controls {
+      margin-bottom: 10px;
+    }
     .grid-container {
       display: grid;
       grid-template-columns: repeat(20, 1fr);
-      grid-template-rows: repeat(10, 100px);
+      grid-template-rows: repeat(10, 1fr);
+      width: 100vw;
+      height: 80vh;
       gap: 1px;
       border: 1px solid #ccc;
-      user-select: none;
     }
     .cell {
       border: 1px solid #aaa;
@@ -21,21 +34,20 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 2px;
+      padding: 1px;
+      font-size: 0.5vw;
     }
     .cell.selected {
-      outline: 3px solid #4285f4;
+      outline: 2px solid #4285f4;
     }
     .cell textarea {
       width: 100%;
       height: 60%;
       border: none;
       resize: none;
-      font-size: 12px;
-    }
-    .cell input[type="file"] {
-      width: 100%;
-      font-size: 10px;
+      font-size: 0.5vw;
+      padding: 1px;
+      box-sizing: border-box;
     }
     .cell img {
       max-width: 100%;
@@ -44,24 +56,31 @@
       display: block;
     }
     .cell select {
-      font-size: 10px;
+      font-size: 0.5vw;
       width: 100%;
     }
     button {
-      margin: 10px 5px 5px 0;
-      padding: 6px 12px;
+      margin-right: 6px;
+      padding: 4px 8px;
+      font-size: 12px;
     }
   </style>
 </head>
 <body>
 
 <h2>目標管理・ルーティン管理ホーム</h2>
-<button id="mergeBtn">選択セルを結合</button>
-<button id="splitBtn">選択セルを分割</button>
+<div class="controls">
+  <button id="mergeBtn">選択セルを結合</button>
+  <button id="splitBtn">選択セルを分割</button>
+  <button id="uploadImageBtn">画像を添付</button>
+  <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+</div>
 <div class="grid-container" id="grid"></div>
 
 <script>
   const grid = document.getElementById("grid");
+  const imageInput = document.getElementById("imageInput");
+
   const colorOptions = [
     { name: "なし", value: "" },
     { name: "赤", value: "#f28b82" },
@@ -85,23 +104,9 @@
       cell.dataset.col = col;
 
       const textarea = document.createElement("textarea");
-      const fileInput = document.createElement("input");
-      fileInput.type = "file";
-      fileInput.accept = "image/*";
+
       const img = document.createElement("img");
       img.style.display = "none";
-
-      fileInput.addEventListener("change", (event) => {
-        const file = event.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            img.src = e.target.result;
-            img.style.display = "block";
-          };
-          reader.readAsDataURL(file);
-        }
-      });
 
       const colorSelect = document.createElement("select");
       colorOptions.forEach(opt => {
@@ -117,12 +122,11 @@
 
       cell.appendChild(textarea);
       cell.appendChild(img);
-      cell.appendChild(fileInput);
       cell.appendChild(colorSelect);
 
       cell.addEventListener("click", (e) => {
+        const key = `${row},${col}`;
         if (e.ctrlKey || e.metaKey) {
-          const key = `${row},${col}`;
           if (selectedCells.has(key)) {
             selectedCells.delete(key);
             cell.classList.remove("selected");
@@ -133,7 +137,7 @@
         } else {
           selectedCells.clear();
           document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-          selectedCells.add(`${row},${col}`);
+          selectedCells.add(key);
           cell.classList.add("selected");
         }
       });
@@ -206,6 +210,29 @@
 
   document.getElementById("mergeBtn").addEventListener("click", mergeCells);
   document.getElementById("splitBtn").addEventListener("click", splitCell);
+
+  document.getElementById("uploadImageBtn").addEventListener("click", () => {
+    if (selectedCells.size !== 1) {
+      alert("画像は1つのセルにだけ添付できます。1セルのみ選択してください。");
+      return;
+    }
+    imageInput.click();
+  });
+
+  imageInput.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const [row, col] = [...selectedCells][0].split(',').map(Number);
+      const cell = getCell(row, col).element;
+      const img = cell.querySelector("img");
+      img.src = e.target.result;
+      img.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+    imageInput.value = "";
+  });
 </script>
 
 </body>
