@@ -108,25 +108,47 @@
       return cells.find(c => c.row === row && c.col === col);
     }
 
-    for (let row = 0; row < 10; row++) {
-      for (let col = 0; col < 20; col++) {
-        const cell = document.createElement("div");
-        cell.classList.add("cell");
-        cell.dataset.row = row;
-        cell.dataset.col = col;
+    function createGrid() {
+  for (let row = 0; row < 10; row++) {
+    for (let col = 0; col < 20; col++) {
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.dataset.row = row;
+      cell.dataset.col = col;
 
-        const editable = document.createElement("div");
-        editable.classList.add("editable");
-        editable.contentEditable = true;
+      const editable = document.createElement("div");
+      editable.classList.add("editable");
+      editable.contentEditable = true;
 
-        const img = document.createElement("img");
-        img.style.display = "none";
+      const img = document.createElement("img");
+      img.style.display = "none";
 
-        cell.appendChild(editable);
-        cell.appendChild(img);
+      cell.appendChild(editable);
+      cell.appendChild(img);
 
-        cell.addEventListener("click", (e) => {
-          const key = `${row},${col}`;
+      cell.addEventListener("click", (e) => {
+        const key = `${row},${col}`;
+        if (e.ctrlKey || e.metaKey) {
+          if (selectedCells.has(key)) {
+            selectedCells.delete(key);
+            cell.classList.remove("selected");
+          } else {
+            selectedCells.add(key);
+            cell.classList.add("selected");
+          }
+        } else {
+          selectedCells.clear();
+          document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+          selectedCells.add(key);
+          cell.classList.add("selected");
+        }
+      });
+
+      grid.appendChild(cell);
+      cells.push({ row, col, element: cell });
+    }
+  }
+},${col}`;
           if (e.ctrlKey || e.metaKey) {
             if (selectedCells.has(key)) {
               selectedCells.delete(key);
@@ -195,7 +217,10 @@
     }
 
     window.addEventListener('beforeunload', saveState);
-    window.addEventListener('load', loadState);
+    window.addEventListener('load', () => {
+  createGrid();
+  loadState();
+});
 
     mergeBtn.addEventListener("click", () => {
       if (selectedCells.size < 2) return alert("2つ以上のセルを選択してください");
