@@ -91,6 +91,9 @@
     <button id="insertCheckboxBtn">☑ チェック</button>
     <button id="uploadImageBtn">🖼 画像</button>
     <button id="deleteContentBtn">🗑 削除</button>
+    <button id="clearAllBtn">🧹 全削除</button>
+    <button id="undoBtn">↩ Undo</button>
+    <button id="redoBtn">↪ Redo</button>
     <input type="file" id="imageInput" accept="image/*" style="display: none;" />
     <button class="size-btn" data-size="2.56vw" style="font-size:2.56vw;">あ</button>
     <button class="size-btn" data-size="1.92vw" style="font-size:1.92vw;">あ</button>
@@ -99,160 +102,36 @@
   </div>
   <div class="grid-container" id="grid"></div>
   <script>
-    const grid = document.getElementById("grid");
-    const cells = [];
-    const selectedCells = new Set();
+    const undoStack = [];
+    const redoStack = [];
 
-    function getCell(row, col) {
-      return cells.find(c => c.row === row && c.col === col);
+    function pushUndo() {
+      undoStack.push(localStorage.getItem("gridData"));
+      redoStack.length = 0;
     }
 
-    function saveGridState() {
-      const gridData = cells.map(({ row, col, element }) => {
-        const editable = element.querySelector(".editable");
-        const img = element.querySelector("img");
-        const checkbox = editable.querySelector("input[type='checkbox']");
-        return {
-          row, col,
-          text: editable.innerText.replace(/^\s*✔?\s*/, ''),
-          fontSize: editable.style.fontSize || "",
-          bgColor: element.style.backgroundColor || "",
-          checkbox: checkbox ? checkbox.checked : null,
-          image: img && img.src && img.style.display !== "none" ? img.src : null,
-          gridRow: element.style.gridRow || "",
-          gridColumn: element.style.gridColumn || "",
-          isHidden: element.style.display === "none"
-        };
-      });
-      localStorage.setItem("gridData", JSON.stringify(gridData));
-    }
-
-    function loadGridState() {
-      const saved = localStorage.getItem("gridData");
-      if (!saved) return;
-      const gridData = JSON.parse(saved);
-      gridData.forEach(data => {
-        const cell = getCell(data.row, data.col).element;
-        const editable = cell.querySelector(".editable");
-        const img = cell.querySelector("img");
-
-        editable.innerText = data.text || "";
-        if (data.fontSize) editable.style.fontSize = data.fontSize;
-        if (data.bgColor) {
-          cell.style.backgroundColor = data.bgColor;
-          editable.style.backgroundColor = data.bgColor;
-        }
-        if (data.checkbox !== null) {
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.checked = data.checkbox;
-          checkbox.style.marginRight = "4px";
-          checkbox.addEventListener("change", () => {
-            editable.style.textDecoration = checkbox.checked ? "line-through" : "none";
-            saveGridState();
-          });
-          editable.prepend(checkbox);
-          editable.style.textDecoration = data.checkbox ? "line-through" : "none";
-        }
-        if (data.image) {
-          img.src = data.image;
-          img.style.display = "block";
-        }
-        cell.style.gridRow = data.gridRow || "";
-        cell.style.gridColumn = data.gridColumn || "";
-        cell.style.display = data.isHidden ? "none" : "flex";
-      });
-    }
-
-    function createGrid() {
-      for (let row = 0; row < 10; row++) {
-        for (let col = 0; col < 20; col++) {
-          const cell = document.createElement("div");
-          cell.classList.add("cell");
-          cell.dataset.row = row;
-          cell.dataset.col = col;
-
-          const editable = document.createElement("div");
-          editable.classList.add("editable");
-          editable.contentEditable = true;
-          editable.addEventListener("input", saveGridState);
-
-          editable.addEventListener("keydown", (e) => {
-            if (e.key === "Backspace") {
-              const checkbox = editable.querySelector("input[type='checkbox']");
-              const img = cell.querySelector("img");
-              if (checkbox) {
-                checkbox.remove();
-                editable.style.textDecoration = "none";
-              }
-              if (img && img.style.display !== "none") {
-                img.src = "";
-                img.style.display = "none";
-              }
-              saveGridState();
-            }
-          });
-
-          const img = document.createElement("img");
-          img.style.display = "none";
-
-          cell.appendChild(editable);
-          cell.appendChild(img);
-
-          cell.addEventListener("click", (e) => {
-            const key = `${row},${col}`;
-            if (e.ctrlKey || e.metaKey) {
-              if (selectedCells.has(key)) {
-                selectedCells.delete(key);
-                cell.classList.remove("selected");
-              } else {
-                selectedCells.add(key);
-                cell.classList.add("selected");
-              }
-            } else {
-              selectedCells.clear();
-              document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-              selectedCells.add(key);
-              cell.classList.add("selected");
-            }
-          });
-
-          grid.appendChild(cell);
-          cells.push({ row, col, element: cell });
-        }
-      }
-    }
-
-    window.addEventListener("load", () => {
-      createGrid();
-      loadGridState();
+    document.getElementById("undoBtn").addEventListener("click", () => {
+      if (undoStack.length === 0) return alert("これ以上戻せません。");
+      redoStack.push(localStorage.getItem("gridData"));
+      const prev = undoStack.pop();
+      localStorage.setItem("gridData", prev);
+      location.reload();
     });
 
-    document.getElementById("deleteContentBtn").addEventListener("click", () => {
-      if (selectedCells.size === 0) return alert("削除するセルを選択してください。");
-
-      selectedCells.forEach(key => {
-        const [row, col] = key.split(',').map(Number);
-        const cell = getCell(row, col).element;
-        const editable = cell.querySelector(".editable");
-        const img = cell.querySelector("img");
-        const checkbox = editable.querySelector("input[type='checkbox']");
-
-        if (checkbox) {
-          checkbox.remove();
-          editable.style.textDecoration = "none";
-        }
-
-        if (img && img.style.display !== "none") {
-          img.src = "";
-          img.style.display = "none";
-        }
-      });
-
-      saveGridState();
+    document.getElementById("redoBtn").addEventListener("click", () => {
+      if (redoStack.length === 0) return alert("やり直しできません。");
+      undoStack.push(localStorage.getItem("gridData"));
+      const next = redoStack.pop();
+      localStorage.setItem("gridData", next);
+      location.reload();
     });
 
-    // （他のボタンのイベントリスナーもここに続きます...）
+    document.getElementById("clearAllBtn").addEventListener("click", () => {
+      if (!confirm("すべての内容を削除しますか？")) return;
+      pushUndo();
+      localStorage.removeItem("gridData");
+      location.reload();
+    });
   </script>
 </body>
 </html>
