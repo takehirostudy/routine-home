@@ -192,10 +192,8 @@ window.addEventListener('beforeunload', saveState);
       }
     }
 
-    window.addEventListener("load", () => {
-  createGrid();
-  loadState();
-});
+    createGrid();
+loadState();
       // 色変更機能
     document.querySelectorAll(".color-btn").forEach(btn => {
       btn.addEventListener("click", () => {
