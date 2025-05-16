@@ -114,7 +114,10 @@
           fontSize: editable.style.fontSize || "",
           bgColor: element.style.backgroundColor || "",
           checkbox: checkbox ? checkbox.checked : null,
-          image: img && img.src && img.style.display !== "none" ? img.src : null
+          image: img && img.src && img.style.display !== "none" ? img.src : null,
+          gridRow: element.style.gridRow || "",
+          gridColumn: element.style.gridColumn || "",
+          isHidden: element.style.display === "none"
         };
       });
       localStorage.setItem("gridData", JSON.stringify(gridData));
@@ -151,6 +154,9 @@
           img.src = data.image;
           img.style.display = "block";
         }
+        cell.style.gridRow = data.gridRow || "";
+        cell.style.gridColumn = data.gridColumn || "";
+        cell.style.display = data.isHidden ? "none" : "flex";
       });
     }
 
