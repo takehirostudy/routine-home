@@ -1,25 +1,20 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>目標管理ホーム</title>
   <style>
     body {
       margin: 0;
       padding: 10px;
       font-family: sans-serif;
-      box-sizing: border-box;
-    }
-    h2 {
-      font-size: 18px;
     }
     .controls {
-      margin-bottom: 10px;
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      align-items: center;
+      margin-bottom: 10px;
     }
     .grid-container {
       display: grid;
@@ -32,13 +27,10 @@
     }
     .cell {
       border: 1px solid #aaa;
-      background-color: #fff;
-      overflow: hidden;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
       padding: 1px;
-      font-size: 0.5vw;
+      font-size: 1vw;
     }
     .cell.selected {
       outline: 2px solid #4285f4;
@@ -47,9 +39,10 @@
       flex: 1;
       display: flex;
       align-items: center;
-      justify-content: center;
-      text-align: center;
-      font-size: 0.5vw;
+      justify-content: flex-start;
+      gap: 4px;
+      font-size: 1vw;
+      text-align: left;
       padding: 2px;
       border: none;
       outline: none;
@@ -66,181 +59,102 @@
       font-size: 12px;
       cursor: pointer;
     }
-    .color-btn, .size-btn {
-      width: 24px;
-      height: 24px;
+    .size-btn {
+      width: 32px;
+      height: 32px;
       border: none;
       border-radius: 4px;
-      cursor: pointer;
-      padding: 0;
-    }
-    .size-btn {
       background-color: #f0f0f0;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+  <h2>目標管理・ルーティン管理ホーム</h2>
+  <div class="controls">
+    <button id="insertCheckboxBtn">☑ チェック</button>
+    <button class="size-btn" data-size="1.6vw" style="font-size:1.6vw;">あ</button>
+    <button class="size-btn" data-size="1vw" style="font-size:1vw;">あ</button>
+    <button class="size-btn" data-size="1.2vw" style="font-size:1.2vw;">あ</button>
+    <button class="size-btn" data-size="0.8vw" style="font-size:0.8vw;">あ</button>
+  </div>
+  <div class="grid-container" id="grid"></div>
 
-<h2>目標管理・ルーティン管理ホーム</h2>
-<div class="controls">
-  <button id="mergeBtn">結合</button>
-  <button id="splitBtn">分離</button>
-  <button id="uploadImageBtn">画像</button>
-  <button class="color-btn" style="background-color:#f28b82;" data-color="#f28b82"></button>
-  <button class="color-btn" style="background-color:#fbbc04;" data-color="#fbbc04"></button>
-  <button class="color-btn" style="background-color:#fff475;" data-color="#fff475"></button>
-  <button class="color-btn" style="background-color:#ccff90;" data-color="#ccff90"></button>
-  <button class="color-btn" style="background-color:#a7ffeb;" data-color="#a7ffeb"></button>
-  <button class="color-btn" style="background-color:#d7aefb;" data-color="#d7aefb"></button>
-  <button class="color-btn" style="background-color:#e0e0e0;" data-color="#e0e0e0"></button>
-  <button class="size-btn" data-size="0.4vw" style="font-size:0.4vw;">あ</button>
-  <button class="size-btn" data-size="0.5vw" style="font-size:0.5vw;">あ</button>
-  <button class="size-btn" data-size="0.6vw" style="font-size:0.6vw;">あ</button>
-  <button class="size-btn" data-size="0.8vw" style="font-size:0.8vw;">あ</button>
-  <input type="file" id="imageInput" accept="image/*" style="display: none;" />
-</div>
-<div class="grid-container" id="grid"></div>
-<script>
-  const grid = document.getElementById("grid");
-  const imageInput = document.getElementById("imageInput");
-  const cells = [];
-  const selectedCells = new Set();
-  const hiddenMap = {};
+  <script>
+    const grid = document.getElementById("grid");
+    const insertCheckboxBtn = document.getElementById("insertCheckboxBtn");
+    const cells = [];
+    const selectedCells = new Set();
 
-  for (let row = 0; row < 10; row++) {
-    for (let col = 0; col < 20; col++) {
-      const cell = document.createElement("div");
-      cell.classList.add("cell");
-      cell.dataset.row = row;
-      cell.dataset.col = col;
-      const editable = document.createElement("div");
-      editable.classList.add("editable");
-      editable.contentEditable = true;
-      const img = document.createElement("img");
-      img.style.display = "none";
-      cell.appendChild(editable);
-      cell.appendChild(img);
-      cell.addEventListener("click", (e) => {
-        const key = `${row},${col}`;
-        if (e.ctrlKey || e.metaKey) {
-          if (selectedCells.has(key)) {
-            selectedCells.delete(key);
-            cell.classList.remove("selected");
+    for (let row = 0; row < 10; row++) {
+      for (let col = 0; col < 20; col++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.dataset.row = row;
+        cell.dataset.col = col;
+
+        const editable = document.createElement("div");
+        editable.classList.add("editable");
+        editable.contentEditable = true;
+
+        const img = document.createElement("img");
+        img.style.display = "none";
+
+        cell.appendChild(editable);
+        cell.appendChild(img);
+
+        cell.addEventListener("click", (e) => {
+          const key = `${row},${col}`;
+          if (e.ctrlKey || e.metaKey) {
+            if (selectedCells.has(key)) {
+              selectedCells.delete(key);
+              cell.classList.remove("selected");
+            } else {
+              selectedCells.add(key);
+              cell.classList.add("selected");
+            }
           } else {
+            selectedCells.clear();
+            document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
             selectedCells.add(key);
             cell.classList.add("selected");
           }
-        } else {
-          selectedCells.clear();
-          document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-          selectedCells.add(key);
-          cell.classList.add("selected");
+        });
+
+        grid.appendChild(cell);
+        cells.push({ row, col, element: cell });
+      }
+    }
+
+    function getCell(row, col) {
+      return cells.find(c => c.row === row && c.col === col);
+    }
+
+    insertCheckboxBtn.addEventListener("click", () => {
+      selectedCells.forEach(key => {
+        const [row, col] = key.split(',').map(Number);
+        const cell = getCell(row, col).element;
+        const editable = cell.querySelector(".editable");
+        if (editable) {
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.style.marginRight = "4px";
+          editable.prepend(checkbox);
         }
       });
-      grid.appendChild(cell);
-      cells.push({ row, col, element: cell });
-    }
-  }
+    });
 
-  function getCell(row, col) {
-    return cells.find(c => c.row === row && c.col === col);
-  }
-
-  document.getElementById("mergeBtn").addEventListener("click", () => {
-    if (selectedCells.size < 2) return alert("2つ以上のセルを選択してください");
-    const coords = [...selectedCells].map(c => c.split(',').map(Number));
-    const rows = coords.map(c => c[0]);
-    const cols = coords.map(c => c[1]);
-    const minRow = Math.min(...rows);
-    const maxRow = Math.max(...rows);
-    const minCol = Math.min(...cols);
-    const maxCol = Math.max(...cols);
-    const area = (maxRow - minRow + 1) * (maxCol - minCol + 1);
-    if (area !== selectedCells.size) {
-      return alert("隣接する長方形で選択してください");
-    }
-    const baseCell = getCell(minRow, minCol).element;
-    baseCell.style.gridRow = `${minRow + 1} / span ${maxRow - minRow + 1}`;
-    baseCell.style.gridColumn = `${minCol + 1} / span ${maxCol - minCol + 1}`;
-    hiddenMap[`${minRow},${minCol}`] = [];
-    for (const [r, c] of coords) {
-      if (r === minRow && c === minCol) continue;
-      const target = getCell(r, c).element;
-      target.style.display = "none";
-      hiddenMap[`${minRow},${minCol}`].push(`${r},${c}`);
-    }
-    selectedCells.clear();
-    document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-  });
-
-  document.getElementById("splitBtn").addEventListener("click", () => {
-    if (selectedCells.size !== 1) return alert("1つの結合セルを選択してください");
-    const key = [...selectedCells][0];
-    const [row, col] = key.split(',').map(Number);
-    const baseCell = getCell(row, col).element;
-    if (!(key in hiddenMap)) {
-      alert("このセルは結合されていません");
-      return;
-    }
-    baseCell.style.gridRow = "";
-    baseCell.style.gridColumn = "";
-    for (const hiddenKey of hiddenMap[key]) {
-      const [hr, hc] = hiddenKey.split(',').map(Number);
-      const cell = getCell(hr, hc).element;
-      cell.style.display = "flex";
-    }
-    delete hiddenMap[key];
-    selectedCells.clear();
-    document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-  });
-
-  document.getElementById("uploadImageBtn").addEventListener("click", () => {
-    if (selectedCells.size !== 1) {
-      alert("画像は1つのセルにだけ添付できます。1セルのみ選択してください。");
-      return;
-    }
-    imageInput.click();
-  });
-
-  imageInput.addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const [row, col] = [...selectedCells][0].split(',').map(Number);
-      const cell = getCell(row, col).element;
-      const img = cell.querySelector("img");
-      img.src = e.target.result;
-      img.style.display = "block";
-    };
-    reader.readAsDataURL(file);
-    imageInput.value = "";
-  });
-
-  document.querySelectorAll(".color-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const color = btn.dataset.color;
-      selectedCells.forEach(key => {
-        const [row, col] = key.split(',').map(Number);
-        const cell = getCell(row, col).element;
-        const editable = cell.querySelector(".editable");
-        cell.style.backgroundColor = color;
-        if (editable) editable.style.backgroundColor = color;
+    document.querySelectorAll(".size-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const size = btn.dataset.size;
+        selectedCells.forEach(key => {
+          const [row, col] = key.split(',').map(Number);
+          const cell = getCell(row, col).element;
+          const editable = cell.querySelector(".editable");
+          if (editable) editable.style.fontSize = size;
+        });
       });
     });
-  });
-
-  document.querySelectorAll(".size-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const size = btn.dataset.size;
-      selectedCells.forEach(key => {
-        const [row, col] = key.split(',').map(Number);
-        const cell = getCell(row, col).element;
-        const editable = cell.querySelector(".editable");
-        if (editable) editable.style.fontSize = size;
-      });
-    });
-  });
-</script>
+  </script>
 </body>
 </html>
