@@ -39,10 +39,10 @@
       flex: 1;
       display: flex;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: center;
       gap: 4px;
       font-size: 1vw;
-      text-align: left;
+      text-align: center;
       padding: 2px;
       border: none;
       outline: none;
@@ -70,18 +70,24 @@
       align-items: center;
       justify-content: center;
     }
+    .color-btn {
+      width: 24px;
+      height: 24px;
+      border: none;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <h2>目標管理・ルーティン管理ホーム</h2>
   <div class="controls">
-    <button class="color-btn" data-color="#f28b82" style="background-color:#f28b82; width:24px; height:24px;"></button>
-    <button class="color-btn" data-color="#fbbc04" style="background-color:#fbbc04; width:24px; height:24px;"></button>
-    <button class="color-btn" data-color="#fff475" style="background-color:#fff475; width:24px; height:24px;"></button>
-    <button class="color-btn" data-color="#ccff90" style="background-color:#ccff90; width:24px; height:24px;"></button>
-    <button class="color-btn" data-color="#a7ffeb" style="background-color:#a7ffeb; width:24px; height:24px;"></button>
-    <button class="color-btn" data-color="#d7aefb" style="background-color:#d7aefb; width:24px; height:24px;"></button>
-    <button class="color-btn" data-color="#e0e0e0" style="background-color:#e0e0e0; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#f28b82" style="background-color:#f28b82;"></button>
+    <button class="color-btn" data-color="#fbbc04" style="background-color:#fbbc04;"></button>
+    <button class="color-btn" data-color="#fff475" style="background-color:#fff475;"></button>
+    <button class="color-btn" data-color="#ccff90" style="background-color:#ccff90;"></button>
+    <button class="color-btn" data-color="#a7ffeb" style="background-color:#a7ffeb;"></button>
+    <button class="color-btn" data-color="#d7aefb" style="background-color:#d7aefb;"></button>
+    <button class="color-btn" data-color="#e0e0e0" style="background-color:#e0e0e0;"></button>
     <button id="mergeBtn">結合</button>
     <button id="splitBtn">分離</button>
     <button id="insertCheckboxBtn">☑ チェック</button>
@@ -95,6 +101,7 @@
   <div class="grid-container" id="grid"></div>
   <script>
     const grid = document.getElementById("grid");
+    const imageInput = document.getElementById("imageInput");
     const cells = [];
     const selectedCells = new Set();
 
@@ -107,8 +114,8 @@
         for (let col = 0; col < 20; col++) {
           const cell = document.createElement("div");
           cell.classList.add("cell");
-          cell.dataset.row = row;
-          cell.dataset.col = col;
+          const key = `${row},${col}`;
+          cell.dataset.key = key;
 
           const editable = document.createElement("div");
           editable.classList.add("editable");
@@ -121,20 +128,14 @@
           cell.appendChild(img);
 
           cell.addEventListener("click", (e) => {
-            const key = `${row},${col}`;
             if (e.ctrlKey || e.metaKey) {
-              if (selectedCells.has(key)) {
-                selectedCells.delete(key);
-                cell.classList.remove("selected");
-              } else {
-                selectedCells.add(key);
-                cell.classList.add("selected");
-              }
+              cell.classList.toggle("selected");
+              selectedCells.has(key) ? selectedCells.delete(key) : selectedCells.add(key);
             } else {
-              selectedCells.clear();
               document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-              selectedCells.add(key);
+              selectedCells.clear();
               cell.classList.add("selected");
+              selectedCells.add(key);
             }
           });
 
@@ -150,17 +151,16 @@
         const img = element.querySelector("img");
         const checkbox = editable.querySelector("input[type='checkbox']");
         return {
-          row,
-          col,
+          row, col,
           content: editable.innerHTML,
-          fontSize: editable.style.fontSize || '',
-          bgColor: element.style.backgroundColor || '',
+          fontSize: editable.style.fontSize,
+          bgColor: element.style.backgroundColor,
           imgSrc: img && img.src !== window.location.href ? img.src : '',
           checkboxChecked: checkbox ? checkbox.checked : false,
-          textDecoration: editable.style.textDecoration || '',
-          gridRow: element.style.gridRow || '',
-          gridColumn: element.style.gridColumn || '',
-          display: element.style.display || 'flex'
+          textDecoration: editable.style.textDecoration,
+          gridRow: element.style.gridRow,
+          gridColumn: element.style.gridColumn,
+          display: element.style.display
         };
       });
       localStorage.setItem('gridState', JSON.stringify(state));
@@ -169,7 +169,8 @@
     function loadState() {
       const state = JSON.parse(localStorage.getItem('gridState') || '[]');
       state.forEach(({ row, col, content, fontSize, bgColor, imgSrc, checkboxChecked, textDecoration, gridRow, gridColumn, display }) => {
-        const cell = getCell(row, col).element;
+        const cell = getCell(row, col)?.element;
+        if (!cell) return;
         const editable = cell.querySelector(".editable");
         const img = cell.querySelector("img");
         editable.innerHTML = content;
@@ -190,14 +191,11 @@
       });
     }
 
+    window.addEventListener("beforeunload", saveState);
     window.addEventListener("load", () => {
       createGrid();
-      requestAnimationFrame(() => {
-        loadState();
-      });
+      requestAnimationFrame(loadState);
     });
-
-    window.addEventListener("beforeunload", saveState);
   </script>
 </body>
 </html>
