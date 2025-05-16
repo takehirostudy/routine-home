@@ -180,7 +180,7 @@
         cell.style.backgroundColor = bgColor;
         cell.style.gridRow = gridRow;
         cell.style.gridColumn = gridColumn;
-        cell.style.display = display;
+        cell.style.display = display && display !== 'none' ? display : 'flex';
         const checkbox = editable.querySelector("input[type='checkbox']");
         if (checkbox) {
           checkbox.checked = checkboxChecked;
