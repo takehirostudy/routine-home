@@ -103,25 +103,7 @@
   <div class="grid-container" id="grid"></div>
   <script>
     const grid = document.getElementById("grid");
-
-    for (let row = 0; row < 10; row++) {
-      for (let col = 0; col < 20; col++) {
-        const cell = document.createElement("div");
-        cell.className = "cell";
-
-        const editable = document.createElement("div");
-        editable.className = "editable";
-        editable.contentEditable = true;
-
-        const img = document.createElement("img");
-        img.style.display = "none";
-
-        cell.appendChild(editable);
-        cell.appendChild(img);
-        grid.appendChild(cell);
-      }
-    }
-
+    const selectedCells = new Set();
     const undoStack = [];
     const redoStack = [];
 
@@ -129,6 +111,53 @@
       undoStack.push(localStorage.getItem("gridData"));
       redoStack.length = 0;
     }
+
+    function createGrid() {
+      for (let row = 0; row < 10; row++) {
+        for (let col = 0; col < 20; col++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          cell.dataset.row = row;
+          cell.dataset.col = col;
+
+          const editable = document.createElement("div");
+          editable.className = "editable";
+          editable.contentEditable = true;
+
+          editable.addEventListener("click", (e) => {
+            e.stopPropagation();
+          });
+
+          const img = document.createElement("img");
+          img.style.display = "none";
+
+          cell.appendChild(editable);
+          cell.appendChild(img);
+
+          cell.addEventListener("click", (e) => {
+            const key = `${row},${col}`;
+            if (e.ctrlKey || e.metaKey) {
+              if (selectedCells.has(key)) {
+                selectedCells.delete(key);
+                cell.classList.remove("selected");
+              } else {
+                selectedCells.add(key);
+                cell.classList.add("selected");
+              }
+            } else {
+              selectedCells.clear();
+              document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+              selectedCells.add(key);
+              cell.classList.add("selected");
+            }
+          });
+
+          grid.appendChild(cell);
+        }
+      }
+    }
+
+    createGrid();
 
     document.getElementById("undoBtn").addEventListener("click", () => {
       if (undoStack.length === 0) return alert("これ以上戻せません。");
