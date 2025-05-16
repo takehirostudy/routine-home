@@ -115,16 +115,19 @@
     function createGrid() {
       for (let row = 0; row < 10; row++) {
         for (let col = 0; col < 20; col++) {
+          const currentRow = row;
+          const currentCol = col;
+
           const cell = document.createElement("div");
           cell.className = "cell";
-          cell.dataset.row = row;
-          cell.dataset.col = col;
+          cell.dataset.row = currentRow;
+          cell.dataset.col = currentCol;
 
           const editable = document.createElement("div");
           editable.className = "editable";
           editable.contentEditable = true;
 
-          editable.addEventListener("click", (e) => {
+          editable.addEventListener("mousedown", (e) => {
             e.stopPropagation();
           });
 
@@ -135,7 +138,7 @@
           cell.appendChild(img);
 
           cell.addEventListener("click", (e) => {
-            const key = `${row},${col}`;
+            const key = `${currentRow},${currentCol}`;
             if (e.ctrlKey || e.metaKey) {
               if (selectedCells.has(key)) {
                 selectedCells.delete(key);
