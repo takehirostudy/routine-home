@@ -218,17 +218,25 @@
     });
 
     insertCheckboxBtn.addEventListener("click", () => {
-      selectedCells.forEach(key => {
-        const [row, col] = key.split(',').map(Number);
-        const cell = getCell(row, col).element;
-        const editable = cell.querySelector(".editable");
-        if (editable) {
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.style.marginRight = "4px";
-          editable.prepend(checkbox);
+  selectedCells.forEach(key => {
+    const [row, col] = key.split(',').map(Number);
+    const cell = getCell(row, col).element;
+    const editable = cell.querySelector(".editable");
+    if (editable && !editable.querySelector("input[type='checkbox']")) {
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.style.marginRight = "4px";
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+          editable.style.textDecoration = "line-through";
+        } else {
+          editable.style.textDecoration = "none";
         }
       });
+      editable.prepend(checkbox);
+    }
+  });
+});
     });
 
     document.querySelectorAll(".size-btn").forEach(btn => {
@@ -294,4 +302,3 @@
 </script>
 </body>
 </html>
-
