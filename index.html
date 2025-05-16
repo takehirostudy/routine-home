@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>目標管理ホーム</title>
   <style>
     body {
@@ -93,6 +93,7 @@
     <button class="size-btn" data-size="1.28vw" style="font-size:1.28vw;">あ</button>
   </div>
   <div class="grid-container" id="grid"></div>
+
   <script>
     const grid = document.getElementById("grid");
     const cells = [];
@@ -100,6 +101,57 @@
 
     function getCell(row, col) {
       return cells.find(c => c.row === row && c.col === col);
+    }
+
+    function saveGridState() {
+      const gridData = cells.map(({ row, col, element }) => {
+        const editable = element.querySelector(".editable");
+        const img = element.querySelector("img");
+        const checkbox = editable.querySelector("input[type='checkbox']");
+        return {
+          row, col,
+          text: editable.innerText.replace(/^\s*✔?\s*/, ''),
+          fontSize: editable.style.fontSize || "",
+          bgColor: element.style.backgroundColor || "",
+          checkbox: checkbox ? checkbox.checked : null,
+          image: img && img.src && img.style.display !== "none" ? img.src : null
+        };
+      });
+      localStorage.setItem("gridData", JSON.stringify(gridData));
+    }
+
+    function loadGridState() {
+      const saved = localStorage.getItem("gridData");
+      if (!saved) return;
+      const gridData = JSON.parse(saved);
+      gridData.forEach(data => {
+        const cell = getCell(data.row, data.col).element;
+        const editable = cell.querySelector(".editable");
+        const img = cell.querySelector("img");
+
+        editable.innerText = data.text || "";
+        if (data.fontSize) editable.style.fontSize = data.fontSize;
+        if (data.bgColor) {
+          cell.style.backgroundColor = data.bgColor;
+          editable.style.backgroundColor = data.bgColor;
+        }
+        if (data.checkbox !== null) {
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = data.checkbox;
+          checkbox.style.marginRight = "4px";
+          checkbox.addEventListener("change", () => {
+            editable.style.textDecoration = checkbox.checked ? "line-through" : "none";
+            saveGridState();
+          });
+          editable.prepend(checkbox);
+          editable.style.textDecoration = data.checkbox ? "line-through" : "none";
+        }
+        if (data.image) {
+          img.src = data.image;
+          img.style.display = "block";
+        }
+      });
     }
 
     function createGrid() {
@@ -113,6 +165,7 @@
           const editable = document.createElement("div");
           editable.classList.add("editable");
           editable.contentEditable = true;
+          editable.addEventListener("input", saveGridState);
 
           const img = document.createElement("img");
           img.style.display = "none";
@@ -146,8 +199,9 @@
 
     window.addEventListener("load", () => {
       createGrid();
+      loadGridState();
     });
-      // 色変更機能
+
     document.querySelectorAll(".color-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const color = btn.dataset.color;
@@ -156,12 +210,12 @@
           const cell = getCell(row, col).element;
           const editable = cell.querySelector(".editable");
           cell.style.backgroundColor = color;
-          if (editable) editable.style.backgroundColor = color;
+          editable.style.backgroundColor = color;
         });
+        saveGridState();
       });
     });
 
-    // 文字サイズ変更
     document.querySelectorAll(".size-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const size = btn.dataset.size;
@@ -169,12 +223,12 @@
           const [row, col] = key.split(',').map(Number);
           const cell = getCell(row, col).element;
           const editable = cell.querySelector(".editable");
-          if (editable) editable.style.fontSize = size;
+          editable.style.fontSize = size;
         });
+        saveGridState();
       });
     });
 
-    // セル結合
     document.getElementById("mergeBtn").addEventListener("click", () => {
       if (selectedCells.size < 2) return alert("2つ以上のセルを選択してください");
       const coords = [...selectedCells].map(c => c.split(',').map(Number));
@@ -191,27 +245,25 @@
       baseCell.style.gridColumn = `${minCol + 1} / span ${maxCol - minCol + 1}`;
       for (const [r, c] of coords) {
         if (r === minRow && c === minCol) continue;
-        const target = getCell(r, c).element;
-        target.style.display = "none";
+        getCell(r, c).element.style.display = "none";
       }
       selectedCells.clear();
       document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+      saveGridState();
     });
 
-    // セル分離
     document.getElementById("splitBtn").addEventListener("click", () => {
       if (selectedCells.size !== 1) return alert("1つの結合セルを選択してください");
-      const key = [...selectedCells][0];
-      const [row, col] = key.split(',').map(Number);
+      const [row, col] = [...selectedCells][0].split(',').map(Number);
       const baseCell = getCell(row, col).element;
       baseCell.style.gridRow = "";
       baseCell.style.gridColumn = "";
       document.querySelectorAll(".cell").forEach(c => c.style.display = "flex");
       selectedCells.clear();
       document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+      saveGridState();
     });
 
-    // チェックボックス追加
     document.getElementById("insertCheckboxBtn").addEventListener("click", () => {
       selectedCells.forEach(key => {
         const [row, col] = key.split(',').map(Number);
@@ -223,13 +275,14 @@
           checkbox.style.marginRight = "4px";
           checkbox.addEventListener("change", () => {
             editable.style.textDecoration = checkbox.checked ? "line-through" : "none";
+            saveGridState();
           });
           editable.prepend(checkbox);
         }
       });
+      saveGridState();
     });
 
-    // 画像挿入
     const imageInput = document.getElementById("imageInput");
     document.getElementById("uploadImageBtn").addEventListener("click", () => {
       if (selectedCells.size !== 1) return alert("画像は1つのセルにだけ添付できます。1セルのみ選択してください。");
@@ -245,6 +298,7 @@
         const img = cell.querySelector("img");
         img.src = e.target.result;
         img.style.display = "block";
+        saveGridState();
       };
       reader.readAsDataURL(file);
       imageInput.value = "";
@@ -252,4 +306,3 @@
   </script>
 </body>
 </html>
-
