@@ -71,7 +71,14 @@
 </head>
 <body>
   <h2>目標管理・ルーティン管理ホーム</h2>
-  <div class="controls">
+  $1
+    <button class="color-btn" data-color="#f28b82" style="background-color:#f28b82; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#fbbc04" style="background-color:#fbbc04; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#fff475" style="background-color:#fff475; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#ccff90" style="background-color:#ccff90; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#a7ffeb" style="background-color:#a7ffeb; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#d7aefb" style="background-color:#d7aefb; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#e0e0e0" style="background-color:#e0e0e0; width:24px; height:24px;"></button>
     <button id="mergeBtn">結合</button>
     <button id="splitBtn">分離</button>
     <button id="insertCheckboxBtn">☑ チェック</button>
@@ -235,6 +242,19 @@
         });
       });
     });
-  </script>
+  
+    document.querySelectorAll(".color-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const color = btn.dataset.color;
+        selectedCells.forEach(key => {
+          const [row, col] = key.split(',').map(Number);
+          const cell = getCell(row, col).element;
+          const editable = cell.querySelector(".editable");
+          cell.style.backgroundColor = color;
+          if (editable) editable.style.backgroundColor = color;
+        });
+      });
+    });
+$1
 </body>
 </html>
