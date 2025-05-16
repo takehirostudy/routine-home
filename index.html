@@ -264,36 +264,49 @@
       });
     });
     function saveState() {
-      const state = cells.map(({ row, col, element }) => {
-        const editable = element.querySelector(".editable");
-        const img = element.querySelector("img");
-        return {
-          row,
-          col,
-          content: editable.innerHTML,
-          fontSize: editable.style.fontSize || '',
-          bgColor: element.style.backgroundColor || '',
-          imgSrc: img && img.src !== window.location.href ? img.src : ''
-        };
-      });
-      localStorage.setItem('gridState', JSON.stringify(state));
+  const state = cells.map(({ row, col, element }) => {
+    const editable = element.querySelector(".editable");
+    const img = element.querySelector("img");
+    const checkbox = editable.querySelector("input[type='checkbox']");
+    return {
+      row,
+      col,
+      content: editable.innerHTML,
+      fontSize: editable.style.fontSize || '',
+      bgColor: element.style.backgroundColor || '',
+      imgSrc: img && img.src !== window.location.href ? img.src : '',
+      checkboxChecked: checkbox ? checkbox.checked : false,
+      textDecoration: editable.style.textDecoration || '',
+      gridRow: element.style.gridRow || '',
+      gridColumn: element.style.gridColumn || '',
+      display: element.style.display || 'flex'
+    };
+  });
+  localStorage.setItem('gridState', JSON.stringify(state));
     }
 
     function loadState() {
-      const state = JSON.parse(localStorage.getItem('gridState') || '[]');
-      state.forEach(({ row, col, content, fontSize, bgColor, imgSrc }) => {
-        const cell = getCell(row, col).element;
-        const editable = cell.querySelector(".editable");
-        const img = cell.querySelector("img");
-        editable.innerHTML = content;
-        editable.style.fontSize = fontSize;
-        editable.style.backgroundColor = bgColor;
-        cell.style.backgroundColor = bgColor;
-        if (imgSrc) {
-          img.src = imgSrc;
-          img.style.display = "block";
-        }
-      });
+  const state = JSON.parse(localStorage.getItem('gridState') || '[]');
+  state.forEach(({ row, col, content, fontSize, bgColor, imgSrc, checkboxChecked, textDecoration, gridRow, gridColumn, display }) => {
+    const cell = getCell(row, col).element;
+    const editable = cell.querySelector(".editable");
+    const img = cell.querySelector("img");
+    editable.innerHTML = content;
+    editable.style.fontSize = fontSize;
+    editable.style.backgroundColor = bgColor;
+    editable.style.textDecoration = textDecoration;
+    cell.style.backgroundColor = bgColor;
+    cell.style.gridRow = gridRow;
+    cell.style.gridColumn = gridColumn;
+    cell.style.display = display;
+    const checkbox = editable.querySelector("input[type='checkbox']");
+    if (checkbox) checkbox.checked = checkboxChecked;
+    if (imgSrc) {
+      img.src = imgSrc;
+      img.style.display = "block";
+    }
+  });
+});
     }
 
     window.addEventListener('beforeunload', saveState);
@@ -302,3 +315,4 @@
 </script>
 </body>
 </html>
+
