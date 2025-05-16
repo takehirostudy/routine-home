@@ -300,12 +300,14 @@
     cell.style.gridColumn = gridColumn;
     cell.style.display = display;
     const checkbox = editable.querySelector("input[type='checkbox']");
-    if (checkbox) checkbox.checked = checkboxChecked;
-    if (imgSrc) {
-      img.src = imgSrc;
-      img.style.display = "block";
+    if (checkbox) {
+      checkbox.checked = checkboxChecked;
+      checkbox.addEventListener("change", () => {
+        editable.style.textDecoration = checkbox.checked ? "line-through" : "none";
+      });
     }
   });
+}
 });
     }
 
@@ -315,4 +317,3 @@
 </script>
 </body>
 </html>
-
