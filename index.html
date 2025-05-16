@@ -102,6 +102,26 @@
   </div>
   <div class="grid-container" id="grid"></div>
   <script>
+    const grid = document.getElementById("grid");
+
+    for (let row = 0; row < 10; row++) {
+      for (let col = 0; col < 20; col++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+
+        const editable = document.createElement("div");
+        editable.className = "editable";
+        editable.contentEditable = true;
+
+        const img = document.createElement("img");
+        img.style.display = "none";
+
+        cell.appendChild(editable);
+        cell.appendChild(img);
+        grid.appendChild(cell);
+      }
+    }
+
     const undoStack = [];
     const redoStack = [];
 
