@@ -193,9 +193,9 @@
 
     window.addEventListener("beforeunload", saveState);
     window.addEventListener("load", () => {
-      createGrid();
-      requestAnimationFrame(loadState);
-    });
+  createGrid();
+  setTimeout(loadState, 0);
+});
   </script>
 </body>
 </html>
