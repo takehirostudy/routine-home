@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Brain Hacker</title>
   <style>
     body { margin: 0; padding: 10px; font-family: sans-serif; }
@@ -16,25 +16,55 @@
       gap: 1px;
       border: 1px solid #ccc;
     }
-    .cell { border: 1px solid #aaa; display: flex; flex-direction: column; padding: 1px; font-size: 1vw; }
+    .cell {
+      border: 1px solid #aaa;
+      display: flex;
+      flex-direction: column;
+      padding: 1px;
+      font-size: 1vw;
+    }
     .cell.selected { outline: 2px solid #4285f4; }
     .editable {
-      flex: 1; display: flex; flex-direction: column; gap: 4px;
-      font-size: 1vw; text-align: left; padding: 2px;
-      border: none; outline: none; overflow: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 1vw;
+      text-align: left;
+      padding: 2px;
+      border: none;
+      outline: none;
+      overflow: auto;
     }
-    .cell img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .cell img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
     button {
-      padding: 4px 6px; font-size: 12px; cursor: pointer;
+      padding: 4px 6px;
+      font-size: 12px;
+      cursor: pointer;
     }
     .size-btn {
-      width: 32px; height: 32px; border: none; border-radius: 4px;
-      background-color: #f0f0f0; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 4px;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .title-input {
-      font-size: 2em; width: 100%; border: none; border-bottom: 1px solid #ccc;
-      color: black; outline: none; text-align: center;
+      font-size: 2em;
+      width: 100%;
+      border: none;
+      color: black;
+      outline: none;
+      text-align: center;
     }
     .title-input::placeholder {
       color: #bbb;
@@ -318,6 +348,5 @@ window.addEventListener("load", () => {
   }
 });
 </script>
-
 </body>
 </html>
