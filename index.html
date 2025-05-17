@@ -416,9 +416,23 @@ document.getElementById("splitBtn").addEventListener("click", () => {
   if (selectedCells.size !== 1) return alert("1つの結合セルを選択してください。");
   const [row, col] = [...selectedCells][0].split(',').map(Number);
   const base = getCell(row, col).element;
+  const gridRow = base.style.gridRow;
+  const gridColumn = base.style.gridColumn;
+  const rowStart = gridRow.includes("/") ? parseInt(gridRow.split("/")[0]) - 1 : row;
+  const rowSpan = gridRow.includes("span") ? parseInt(gridRow.split("span ")[1]) : 1;
+  const colStart = gridColumn.includes("/") ? parseInt(gridColumn.split("/")[0]) - 1 : col;
+  const colSpan = gridColumn.includes("span") ? parseInt(gridColumn.split("span ")[1]) : 1;
+
   base.style.gridRow = "";
   base.style.gridColumn = "";
-  document.querySelectorAll(".cell").forEach(cell => cell.style.display = "flex");
+
+  for (let r = rowStart; r < rowStart + rowSpan; r++) {
+    for (let c = colStart; c < colStart + colSpan; c++) {
+      const cell = getCell(r, c).element;
+      cell.style.display = "flex";
+    }
+  }
+
   selectedCells.clear();
   document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
   saveState();
