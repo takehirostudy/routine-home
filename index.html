@@ -1,50 +1,9 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Brain Hacker</title>
-  <style>
-    body { margin: 0; padding: 10px; font-family: sans-serif; }
-    .controls { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(20, 1fr);
-      grid-template-rows: repeat(10, 1fr);
-      width: 100vw;
-      height: 80vh;
-      gap: 1px;
-      border: 1px solid #ccc;
-    }
-    .cell {
-      border: 1px solid #aaa;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 1px;
-      font-size: 1vw;
-    }
-    .cell.selected { outline: 2px solid #4285f4; }
-    .editable {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1vw;
-      text-align: center;
-      padding: 2px;
-      border: none;
-      outline: none;
-      overflow: auto;
-    }
-    .cell img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      display: block;
-    }
+.cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
     button {
       padding: 4px 6px;
       font-size: 12px;
