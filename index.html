@@ -166,6 +166,7 @@
             checkbox.style.marginRight = "4px";
             const span = document.createElement("span");
             span.textContent = cbData.text;
+            if (cbData.bold) span.style.fontWeight = "bold";
             span.contentEditable = true;
             span.style.outline = "none";
             if (cbData.bold) span.style.fontWeight = "bold";
