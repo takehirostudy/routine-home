@@ -204,15 +204,13 @@ let dragEnd = null;
 cell.addEventListener("mousedown", (e) => {
   if (e.shiftKey) {
     isDragging = true;
-    dragStart = { row: parseInt(cell.dataset.row), col: parseInt(cell.dataset.col) };
-  }
-});;
+    dragStart = { row, col };
   }
 });
 
 cell.addEventListener("mouseover", (e) => {
   if (isDragging && e.buttons === 1) {
-    dragEnd = { row: parseInt(cell.dataset.row), col: parseInt(cell.dataset.col) };
+    dragEnd = { row, col };
     selectedCells.clear();
     document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
     const minRow = Math.min(dragStart.row, dragEnd.row);
@@ -222,13 +220,6 @@ cell.addEventListener("mouseover", (e) => {
     for (let r = minRow; r <= maxRow; r++) {
       for (let c = minCol; c <= maxCol; c++) {
         const key = `${r},${c}`;
-        selectedCells.add(key);
-        const selectedCell = getCell(r, c)?.element;
-        if (selectedCell) selectedCell.classList.add("selected");
-      }
-    }
-  }
-});,${c}`;
         selectedCells.add(key);
         const selectedCell = getCell(r, c)?.element;
         if (selectedCell) selectedCell.classList.add("selected");
