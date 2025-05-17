@@ -495,6 +495,7 @@ document.getElementById("alignTopLeftBtn").addEventListener("click", () => {
 
 
     window.addEventListener("load", () => {
+  createGrid();
   const titleInput = document.getElementById("pageTitle");
   const savedTitle = localStorage.getItem("pageTitle");
   if (savedTitle) titleInput.value = savedTitle;
