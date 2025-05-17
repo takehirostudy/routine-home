@@ -233,7 +233,7 @@ cell.addEventListener("mouseup", () => {
 });
 
 cell.addEventListener("click", (e) => {
-  const key = `${row},${col}`;
+  const key = `${cell.dataset.row},${cell.dataset.col}`;
   if (e.ctrlKey || e.metaKey) {
     if (selectedCells.has(key)) {
       selectedCells.delete(key);
@@ -301,7 +301,7 @@ cell.addEventListener("click", (e) => {
   wrapper.appendChild(span);
 
   checkbox.addEventListener("change", () => {
-    const span = checkbox.nextElementSibling;
+    const span = wrapper.querySelector('span');
     if (span && span.tagName === "SPAN") {
       span.style.textDecoration = checkbox.checked ? "line-through" : "none";
     }
