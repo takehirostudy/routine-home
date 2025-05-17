@@ -108,7 +108,7 @@
     }
 
     function saveHistory() {
-      const data = JSON.stringify(grid.innerHTML);
+      const data = grid.innerHTML;
       history.splice(historyIndex + 1);
       history.push(data);
       historyIndex++;
@@ -117,7 +117,12 @@
 
     function loadGridFromStorage() {
       const saved = localStorage.getItem("gridData");
-      if (saved) grid.innerHTML = saved;
+      if (saved) {
+        grid.innerHTML = saved;
+        restoreCellEvents();
+      } else {
+        createGrid();
+      }
     }
 
     function resetGrid() {
@@ -129,6 +134,7 @@
       if (historyIndex > 0) {
         historyIndex--;
         grid.innerHTML = history[historyIndex];
+        restoreCellEvents();
       }
     }
 
@@ -136,20 +142,84 @@
       if (historyIndex < history.length - 1) {
         historyIndex++;
         grid.innerHTML = history[historyIndex];
+        restoreCellEvents();
       }
+    }
+
+    function restoreCellEvents() {
+      [...grid.children].forEach(cell => {
+        cell.addEventListener("click", (e) => {
+          const row = cell.dataset.row;
+          const col = cell.dataset.col;
+          const key = `${row},${col}`;
+          if (e.ctrlKey || e.metaKey) {
+            if (selectedCells.has(key)) {
+              selectedCells.delete(key);
+              cell.classList.remove("selected");
+            } else {
+              selectedCells.add(key);
+              cell.classList.add("selected");
+            }
+          } else {
+            selectedCells.clear();
+            document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+            selectedCells.add(key);
+            cell.classList.add("selected");
+          }
+        });
+      });
+    }
+
+    function createGrid() {
+      for (let row = 0; row < 10; row++) {
+        for (let col = 0; col < 20; col++) {
+          const cell = document.createElement("div");
+          cell.classList.add("cell");
+          cell.dataset.row = row;
+          cell.dataset.col = col;
+
+          const editable = document.createElement("div");
+          editable.classList.add("editable");
+          editable.contentEditable = true;
+
+          editable.addEventListener("input", saveHistory);
+
+          const img = document.createElement("img");
+          img.style.display = "none";
+
+          cell.appendChild(editable);
+          cell.appendChild(img);
+
+          cell.addEventListener("click", (e) => {
+            const key = `${row},${col}`;
+            if (e.ctrlKey || e.metaKey) {
+              if (selectedCells.has(key)) {
+                selectedCells.delete(key);
+                cell.classList.remove("selected");
+              } else {
+                selectedCells.add(key);
+                cell.classList.add("selected");
+              }
+            } else {
+              selectedCells.clear();
+              document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+              selectedCells.add(key);
+              cell.classList.add("selected");
+            }
+          });
+
+          grid.appendChild(cell);
+          cells.push({ row, col, element: cell });
+        }
+      }
+      saveHistory();
     }
 
     document.getElementById("resetBtn").addEventListener("click", resetGrid);
     document.getElementById("undoBtn").addEventListener("click", undo);
     document.getElementById("redoBtn").addEventListener("click", redo);
-
+    window.addEventListener("load", loadGridFromStorage);
     window.addEventListener("beforeunload", saveHistory);
-    window.addEventListener("load", () => {
-      loadGridFromStorage();
-      if (!grid.innerHTML) {
-        // 初回のグリッド生成（省略）
-      }
-    });
   </script>
 </body>
 </html>
