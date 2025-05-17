@@ -153,6 +153,7 @@
         const editable = cell.querySelector(".editable");
         const img = cell.querySelector("img");
         editable.innerHTML = data.html || "";
+        
         if (data.checkboxes) {
           const existing = editable.querySelectorAll("input[type='checkbox']");
           existing.forEach(e => e.closest("span")?.remove());
@@ -179,44 +180,7 @@
             });
           });
         }
-        if (data.checkboxes) {
-          const existing = editable.querySelectorAll("input[type='checkbox']");
-          existing.forEach(e => e.closest("span")?.remove());
-          data.checkboxes.forEach(({ checked, text }) => {
-            const wrapper = document.createElement("span");
-            wrapper.style.display = "inline-flex";
-            wrapper.style.alignItems = "center";
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.checked = checked;
-            checkbox.style.marginRight = "4px";
-            const span = document.createElement("span");
-            span.textContent = text;
-            span.contentEditable = true;
-            span.style.outline = "none";
-            if (checked) span.style.textDecoration = "line-through";
-            checkbox.addEventListener("change", () => {
-              span.style.textDecoration = checkbox.checked ? "line-through" : "none";
-              saveState();
-            });
-            wrapper.appendChild(checkbox);
-            wrapper.appendChild(span);
-            editable.prepend(wrapper);
-          });
-        }
-        editable.style.fontSize = data.fontSize || "";
-        editable.style.alignItems = data.alignItems || "flex-start";
-        editable.style.justifyContent = data.justifyContent || "flex-start";
-        editable.style.textAlign = data.textAlign || "left";
-        cell.style.backgroundColor = data.bgColor || "";
-        cell.style.display = data.display || "flex";
-        cell.style.gridRow = data.gridRow || "";
-        cell.style.gridColumn = data.gridColumn || "";
-        if (data.imgSrc) {
-          img.src = data.imgSrc;
-          img.style.display = "block";
-        }
-      });
+);
     }
 
     function undo() {
