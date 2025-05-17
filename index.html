@@ -449,6 +449,12 @@ document.getElementById("alignTopLeftBtn").addEventListener("click", () => {
 });
 
 window.addEventListener("load", () => {
+  const titleInput = document.getElementById("pageTitle");
+  const savedTitle = localStorage.getItem("pageTitle");
+  if (savedTitle) titleInput.value = savedTitle;
+  titleInput.addEventListener("input", () => {
+    localStorage.setItem("pageTitle", titleInput.value);
+  });
   createGrid();
   const saved = localStorage.getItem("gridState");
   if (saved) {
