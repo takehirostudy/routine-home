@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>目標管理ホーム</title>
+  <title>Brain Hacker</title>
   <style>
     body { margin: 0; padding: 10px; font-family: sans-serif; }
     .controls { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
@@ -19,8 +19,8 @@
     .cell { border: 1px solid #aaa; display: flex; flex-direction: column; padding: 1px; font-size: 1vw; }
     .cell.selected { outline: 2px solid #4285f4; }
     .editable {
-      flex: 1; display: flex; align-items: center; justify-content: flex-start;
-      gap: 4px; font-size: 1vw; text-align: left; padding: 2px;
+      flex: 1; display: flex; flex-direction: column; gap: 4px;
+      font-size: 1vw; text-align: left; padding: 2px;
       border: none; outline: none; overflow: auto;
     }
     .cell img { width: 100%; height: 100%; object-fit: contain; display: block; }
@@ -32,10 +32,18 @@
       background-color: #f0f0f0; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
     }
+    .title-input {
+      font-size: 2em; width: 100%; border: none; border-bottom: 1px solid #ccc;
+      color: black; outline: none; text-align: center;
+    }
+    .title-input::placeholder {
+      color: #bbb;
+    }
   </style>
 </head>
 <body>
-<h2>目標管理・ルーティン管理ホーム</h2>
+<input class="title-input" id="pageTitle" placeholder="Brain hacker" />
+
 <div class="controls">
   <button class="color-btn" data-color="#f28b82" style="background-color:#f28b82; width:24px; height:24px;"></button>
   <button class="color-btn" data-color="#fbbc04" style="background-color:#fbbc04; width:24px; height:24px;"></button>
@@ -58,7 +66,9 @@
   <button id="resetBtn">🔄 リセット</button>
   <button id="deleteBtn">🗑 削除</button>
 </div>
+
 <div class="grid-container" id="grid"></div>
+
 <script>
 const grid = document.getElementById("grid");
 const cells = [];
@@ -202,19 +212,32 @@ document.querySelectorAll(".size-btn").forEach(btn => {
   });
 });
 
+function createLabeledCheckbox() {
+  const wrapper = document.createElement("label");
+  wrapper.style.display = "flex";
+  wrapper.style.alignItems = "center";
+  wrapper.style.gap = "4px";
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  const span = document.createElement("span");
+  span.textContent = "";
+  span.contentEditable = true;
+  span.style.outline = "none";
+
+  checkbox.addEventListener("change", () => {
+    span.style.textDecoration = checkbox.checked ? "line-through" : "none";
+    saveState();
+  });
+
+  wrapper.appendChild(checkbox);
+  wrapper.appendChild(span);
+  return wrapper;
+}
+
 document.getElementById("insertCheckboxBtn").addEventListener("click", () => {
   applyToSelectedCells(cell => {
     const editable = cell.querySelector(".editable");
-    if (editable && !editable.querySelector("input[type='checkbox']")) {
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.style.marginRight = "4px";
-      checkbox.addEventListener("change", () => {
-        editable.style.textDecoration = checkbox.checked ? "line-through" : "none";
-        saveState();
-      });
-      editable.prepend(checkbox);
-    }
+    if (editable) editable.appendChild(createLabeledCheckbox());
   });
 });
 
@@ -280,8 +303,6 @@ document.getElementById("deleteBtn").addEventListener("click", () => {
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
     editable.innerHTML = "";
-    const checkbox = editable.querySelector("input[type='checkbox']");
-    if (checkbox) checkbox.remove();
     img.src = "";
     img.style.display = "none";
   });
@@ -297,5 +318,6 @@ window.addEventListener("load", () => {
   }
 });
 </script>
+
 </body>
 </html>
