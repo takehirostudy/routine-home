@@ -1,9 +1,50 @@
-.cell img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brain Hacker</title>
+  <style>
+    body { margin: 0; padding: 10px; font-family: sans-serif; }
+    .controls { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(20, 1fr);
+      grid-template-rows: repeat(10, 1fr);
+      width: 100vw;
+      height: 80vh;
+      gap: 1px;
+      border: 1px solid #ccc;
+    }
+    .cell {
+      border: 1px solid #aaa;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 1px;
+      font-size: 1vw;
+    }
+    .cell.selected { outline: 2px solid #4285f4; }
+    .editable {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1vw;
+      text-align: center;
+      padding: 2px;
+      border: none;
+      outline: none;
+      overflow: auto;
+    }
+    .cell img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
     button {
       padding: 4px 6px;
       font-size: 12px;
@@ -257,49 +298,6 @@
       event.target.value = "";
     });
 
-    document.getElementById("mergeBtn").addEventListener("click", () => {
-      if (selectedCells.size < 2) return alert("2つ以上のセルを選択してください。");
-      const coords = [...selectedCells].map(k => k.split(',').map(Number));
-      const rows = coords.map(c => c[0]);
-      const cols = coords.map(c => c[1]);
-      const minRow = Math.min(...rows), maxRow = Math.max(...rows);
-      const minCol = Math.min(...cols), maxCol = Math.max(...cols);
-      const area = (maxRow - minRow + 1) * (maxCol - minCol + 1);
-      if (area !== selectedCells.size) return alert("隣接する長方形で選択してください");
-      const base = getCell(minRow, minCol).element;
-      base.style.gridRow = `${minRow + 1} / span ${maxRow - minRow + 1}`;
-      base.style.gridColumn = `${minCol + 1} / span ${maxCol - minCol + 1}`;
-      coords.forEach(([r, c]) => {
-        if (r === minRow && c === minCol) return;
-        getCell(r, c).element.style.display = "none";
-      });
-      selectedCells.clear();
-      document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-      saveState();
-    });
-
-    document.getElementById("splitBtn").addEventListener("click", () => {
-      if (selectedCells.size !== 1) return alert("1つの結合セルを選択してください。");
-      const [row, col] = [...selectedCells][0].split(',').map(Number);
-      const base = getCell(row, col).element;
-      base.style.gridRow = "";
-      base.style.gridColumn = "";
-      document.querySelectorAll(".cell").forEach(cell => cell.style.display = "flex");
-      selectedCells.clear();
-      document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-      saveState();
-    });
-
-    document.getElementById("deleteBtn").addEventListener("click", () => {
-      applyToSelectedCells(cell => {
-        const editable = cell.querySelector(".editable");
-        const img = cell.querySelector("img");
-        editable.innerHTML = "";
-        img.src = "";
-        img.style.display = "none";
-      });
-    });
-
     window.addEventListener("load", () => {
       createGrid();
       const saved = localStorage.getItem("gridState");
@@ -310,5 +308,3 @@
       }
     });
   </script>
-</body>
-</html>
