@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>目標管理ホーム</title>
   <style>
     body {
@@ -70,10 +70,6 @@
       align-items: center;
       justify-content: center;
     }
-    #deleteContentBtn {
-      background-color: #ffe0e0;
-      border: 1px solid #ccc;
-    }
   </style>
 </head>
 <body>
@@ -90,10 +86,6 @@
     <button id="splitBtn">分離</button>
     <button id="insertCheckboxBtn">☑ チェック</button>
     <button id="uploadImageBtn">🖼 画像</button>
-    <button id="deleteContentBtn">🗑 削除</button>
-    <button id="clearAllBtn">🧹 全削除</button>
-    <button id="undoBtn">↩ Undo</button>
-    <button id="redoBtn">↪ Redo</button>
     <input type="file" id="imageInput" accept="image/*" style="display: none;" />
     <button class="size-btn" data-size="2.56vw" style="font-size:2.56vw;">あ</button>
     <button class="size-btn" data-size="1.92vw" style="font-size:1.92vw;">あ</button>
@@ -103,33 +95,24 @@
   <div class="grid-container" id="grid"></div>
   <script>
     const grid = document.getElementById("grid");
+    const cells = [];
     const selectedCells = new Set();
-    const undoStack = [];
-    const redoStack = [];
 
-    function pushUndo() {
-      undoStack.push(localStorage.getItem("gridData"));
-      redoStack.length = 0;
+    function getCell(row, col) {
+      return cells.find(c => c.row === row && c.col === col);
     }
 
     function createGrid() {
       for (let row = 0; row < 10; row++) {
         for (let col = 0; col < 20; col++) {
-          const currentRow = row;
-          const currentCol = col;
-
           const cell = document.createElement("div");
-          cell.className = "cell";
-          cell.dataset.row = currentRow;
-          cell.dataset.col = currentCol;
+          cell.classList.add("cell");
+          cell.dataset.row = row;
+          cell.dataset.col = col;
 
           const editable = document.createElement("div");
-          editable.className = "editable";
+          editable.classList.add("editable");
           editable.contentEditable = true;
-
-          editable.addEventListener("mousedown", (e) => {
-            e.stopPropagation();
-          });
 
           const img = document.createElement("img");
           img.style.display = "none";
@@ -138,7 +121,7 @@
           cell.appendChild(img);
 
           cell.addEventListener("click", (e) => {
-            const key = `${currentRow},${currentCol}`;
+            const key = `${row},${col}`;
             if (e.ctrlKey || e.metaKey) {
               if (selectedCells.has(key)) {
                 selectedCells.delete(key);
@@ -156,34 +139,117 @@
           });
 
           grid.appendChild(cell);
+          cells.push({ row, col, element: cell });
         }
       }
     }
 
-    createGrid();
-
-    document.getElementById("undoBtn").addEventListener("click", () => {
-      if (undoStack.length === 0) return alert("これ以上戻せません。");
-      redoStack.push(localStorage.getItem("gridData"));
-      const prev = undoStack.pop();
-      localStorage.setItem("gridData", prev);
-      location.reload();
+    window.addEventListener("load", () => {
+      createGrid();
+    });
+      // 色変更機能
+    document.querySelectorAll(".color-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const color = btn.dataset.color;
+        selectedCells.forEach(key => {
+          const [row, col] = key.split(',').map(Number);
+          const cell = getCell(row, col).element;
+          const editable = cell.querySelector(".editable");
+          cell.style.backgroundColor = color;
+          if (editable) editable.style.backgroundColor = color;
+        });
+      });
     });
 
-    document.getElementById("redoBtn").addEventListener("click", () => {
-      if (redoStack.length === 0) return alert("やり直しできません。");
-      undoStack.push(localStorage.getItem("gridData"));
-      const next = redoStack.pop();
-      localStorage.setItem("gridData", next);
-      location.reload();
+    // 文字サイズ変更
+    document.querySelectorAll(".size-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const size = btn.dataset.size;
+        selectedCells.forEach(key => {
+          const [row, col] = key.split(',').map(Number);
+          const cell = getCell(row, col).element;
+          const editable = cell.querySelector(".editable");
+          if (editable) editable.style.fontSize = size;
+        });
+      });
     });
 
-    document.getElementById("clearAllBtn").addEventListener("click", () => {
-      if (!confirm("すべての内容を削除しますか？")) return;
-      pushUndo();
-      localStorage.removeItem("gridData");
-      location.reload();
+    // セル結合
+    document.getElementById("mergeBtn").addEventListener("click", () => {
+      if (selectedCells.size < 2) return alert("2つ以上のセルを選択してください");
+      const coords = [...selectedCells].map(c => c.split(',').map(Number));
+      const rows = coords.map(c => c[0]);
+      const cols = coords.map(c => c[1]);
+      const minRow = Math.min(...rows);
+      const maxRow = Math.max(...rows);
+      const minCol = Math.min(...cols);
+      const maxCol = Math.max(...cols);
+      const area = (maxRow - minRow + 1) * (maxCol - minCol + 1);
+      if (area !== selectedCells.size) return alert("隣接する長方形で選択してください");
+      const baseCell = getCell(minRow, minCol).element;
+      baseCell.style.gridRow = `${minRow + 1} / span ${maxRow - minRow + 1}`;
+      baseCell.style.gridColumn = `${minCol + 1} / span ${maxCol - minCol + 1}`;
+      for (const [r, c] of coords) {
+        if (r === minRow && c === minCol) continue;
+        const target = getCell(r, c).element;
+        target.style.display = "none";
+      }
+      selectedCells.clear();
+      document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+    });
+
+    // セル分離
+    document.getElementById("splitBtn").addEventListener("click", () => {
+      if (selectedCells.size !== 1) return alert("1つの結合セルを選択してください");
+      const key = [...selectedCells][0];
+      const [row, col] = key.split(',').map(Number);
+      const baseCell = getCell(row, col).element;
+      baseCell.style.gridRow = "";
+      baseCell.style.gridColumn = "";
+      document.querySelectorAll(".cell").forEach(c => c.style.display = "flex");
+      selectedCells.clear();
+      document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+    });
+
+    // チェックボックス追加
+    document.getElementById("insertCheckboxBtn").addEventListener("click", () => {
+      selectedCells.forEach(key => {
+        const [row, col] = key.split(',').map(Number);
+        const cell = getCell(row, col).element;
+        const editable = cell.querySelector(".editable");
+        if (editable && !editable.querySelector("input[type='checkbox']")) {
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.style.marginRight = "4px";
+          checkbox.addEventListener("change", () => {
+            editable.style.textDecoration = checkbox.checked ? "line-through" : "none";
+          });
+          editable.prepend(checkbox);
+        }
+      });
+    });
+
+    // 画像挿入
+    const imageInput = document.getElementById("imageInput");
+    document.getElementById("uploadImageBtn").addEventListener("click", () => {
+      if (selectedCells.size !== 1) return alert("画像は1つのセルにだけ添付できます。1セルのみ選択してください。");
+      imageInput.click();
+    });
+    imageInput.addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const [row, col] = [...selectedCells][0].split(',').map(Number);
+        const cell = getCell(row, col).element;
+        const img = cell.querySelector("img");
+        img.src = e.target.result;
+        img.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+      imageInput.value = "";
     });
   </script>
 </body>
 </html>
+
