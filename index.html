@@ -1,50 +1,9 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Brain Hacker</title>
-  <style>
-    body { margin: 0; padding: 10px; font-family: sans-serif; }
-    .controls { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(20, 1fr);
-      grid-template-rows: repeat(10, 1fr);
-      width: 100vw;
-      height: 80vh;
-      gap: 1px;
-      border: 1px solid #ccc;
-    }
-    .cell {
-      border: 1px solid #aaa;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 1px;
-      font-size: 1vw;
-    }
-    .cell.selected { outline: 2px solid #4285f4; }
-    .editable {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1vw;
-      text-align: center;
-      padding: 2px;
-      border: none;
-      outline: none;
-      overflow: auto;
-    }
-    .cell img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-    }
+.cell img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
     button {
       padding: 4px 6px;
       font-size: 12px;
@@ -85,19 +44,19 @@
   <button class="color-btn" data-color="#a2dff7" style="background-color:#a2dff7; width:24px; height:24px;"></button>
   <button class="color-btn" data-color="#d8d8d8" style="background-color:#d8d8d8; width:24px; height:24px;"></button>
   <button class="color-btn" data-color="#ffffff" style="background-color:#ffffff; width:24px; height:24px;"></button>
-  <button id="mergeBtn">結合</button>
-  <button id="splitBtn">分離</button>
-  <button id="insertCheckboxBtn">☑ チェック</button>
-  <button id="uploadImageBtn">🖼 画像</button>
+  <button id="mergeBtn">🔗</button>
+  <button id="splitBtn">✂️</button>
+  <button id="insertCheckboxBtn">☑️</button>
+  <button id="uploadImageBtn">🖼️</button>
   <input type="file" id="imageInput" accept="image/*" style="display: none;" />
   <button class="size-btn" data-size="2.56vw" style="font-size:2.56vw;">あ</button>
   <button class="size-btn" data-size="1.92vw" style="font-size:1.92vw;">あ</button>
   <button class="size-btn" data-size="1.6vw" style="font-size:1.6vw;">あ</button>
   <button class="size-btn" data-size="1.28vw" style="font-size:1.28vw;">あ</button>
-  <button id="undoBtn">↩️ Undo</button>
-  <button id="redoBtn">↪️ Redo</button>
-  <button id="resetBtn">🔄 リセット</button>
-  <button id="deleteBtn">🗑 削除</button>
+  <button id="undoBtn">↩️</button>
+  <button id="redoBtn">↪️</button>
+  <button id="resetBtn">🔄</button>
+  <button id="deleteBtn">🗑️</button>
 </div>
 
 <div class="grid-container" id="grid"></div>
