@@ -270,7 +270,7 @@
     document.getElementById("insertCheckboxBtn").addEventListener("click", () => {
       applyToSelectedCells(cell => {
         const editable = cell.querySelector(".editable");
-        if (editable) editable.appendChild(createLabeledCheckbox());
+        if (editable) editable.prepend(createLabeledCheckbox());
       });
     });
 
