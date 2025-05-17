@@ -204,13 +204,13 @@ let dragEnd = null;
 cell.addEventListener("mousedown", (e) => {
   if (e.shiftKey || e.buttons === 1) {
     isDragging = true;
-    dragStart = { row: row, col: col };
+    dragStart = { row: parseInt(cell.dataset.row), col: parseInt(cell.dataset.col) };
   }
 });
 
 cell.addEventListener("mouseover", (e) => {
   if (isDragging && (e.buttons === 1 || e.which === 1)) {
-    dragEnd = { row: row, col: col };
+    dragEnd = { row: parseInt(cell.dataset.row), col: parseInt(cell.dataset.col) };
     selectedCells.clear();
     document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
     const minRow = Math.min(dragStart.row, dragEnd.row);
@@ -301,7 +301,10 @@ cell.addEventListener("click", (e) => {
   wrapper.appendChild(span);
 
   checkbox.addEventListener("change", () => {
-    span.style.textDecoration = checkbox.checked ? "line-through" : "none";
+    const span = checkbox.nextElementSibling;
+    if (span && span.tagName === "SPAN") {
+      span.style.textDecoration = checkbox.checked ? "line-through" : "none";
+    }
     saveState();
   });
 
