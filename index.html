@@ -156,34 +156,7 @@
         const editable = cell.querySelector(".editable");
         const img = cell.querySelector("img");
         editable.innerHTML = data.html;
-        
         if (data.checkboxes) {
-          const existing = editable.querySelectorAll("input[type='checkbox']");
-          existing.forEach(e => e.closest("span")?.remove());
-          data.checkboxes.forEach(cbData => {
-            const wrapper = document.createElement("span");
-            wrapper.style.display = "inline-flex";
-            wrapper.style.alignItems = "center";
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.checked = cbData.checked;
-            checkbox.style.marginRight = "4px";
-            const span = document.createElement("span");
-            span.textContent = cbData.text;
-            span.contentEditable = true;
-            span.style.outline = "none";
-            if (cbData.bold) span.style.fontWeight = "bold";
-            if (cbData.checked) span.style.textDecoration = "line-through";
-            wrapper.appendChild(checkbox);
-            wrapper.appendChild(span);
-            editable.appendChild(wrapper);
-            checkbox.addEventListener("change", () => {
-              span.style.textDecoration = checkbox.checked ? "line-through" : "none";
-              saveState();
-            });
-          });
-        }
-    
           const existing = editable.querySelectorAll("input[type='checkbox']");
           existing.forEach(e => e.closest("span")?.remove());
           data.checkboxes.forEach(({ checked, text }) => {
@@ -196,6 +169,7 @@
             checkbox.style.marginRight = "4px";
             const span = document.createElement("span");
             span.textContent = text;
+            if (bold) span.style.fontWeight = "bold";
             span.contentEditable = true;
             span.style.outline = "none";
             if (checked) span.style.textDecoration = "line-through";
