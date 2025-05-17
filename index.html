@@ -155,8 +155,7 @@
         const cell = getCell(data.row, data.col).element;
         const editable = cell.querySelector(".editable");
         const img = cell.querySelector("img");
-        editable.innerHTML = data.html;
-        
+        editable.innerHTML = "";
         if (data.checkboxes) {
           const existing = editable.querySelectorAll("input[type='checkbox']");
           existing.forEach(e => e.closest("span")?.remove());
@@ -183,7 +182,7 @@
             });
           });
         }
-    
+        if (data.checkboxes) {
           const existing = editable.querySelectorAll("input[type='checkbox']");
           existing.forEach(e => e.closest("span")?.remove());
           data.checkboxes.forEach(({ checked, text }) => {
