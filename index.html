@@ -80,7 +80,7 @@
 <body>
   <input class="title-input" id="pageTitle" placeholder="Brain hacker" />
 
-  $1
+  <div class="controls">
     <button id="alignCenterBtn">⬜ 中央揃え</button>
     <button id="alignTopLeftBtn">⬛ 左上揃え</button>
     <button class="color-btn" data-color="#ffa500" style="background-color:#ffa500; width:24px; height:24px;"></button>
@@ -368,7 +368,7 @@ document.getElementById("alignTopLeftBtn").addEventListener("click", () => {
   });
 });
 
-$1
+window.addEventListener("load", () => {
   createGrid();
   const saved = localStorage.getItem("gridState");
   if (saved) {
