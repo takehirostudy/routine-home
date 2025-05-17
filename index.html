@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Brain Hacker</title>
-<style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brain Hacker</title>
+  <style>
     body { margin: 0; padding: 10px; font-family: sans-serif; }
     .controls { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
     .grid-container {
@@ -79,35 +78,39 @@
   </style>
 </head>
 <body>
-<input class="title-input" id="pageTitle" placeholder="Brain hacker"/>
-<div class="controls">
-<button class="color-btn" data-color="#ffa500" style="background-color:#ffa500; width:24px; height:24px;"></button>
-<button class="color-btn" data-color="#f2c1c1" style="background-color:#f2c1c1; width:24px; height:24px;"></button>
-<button class="color-btn" data-color="#ffef5b" style="background-color:#ffef5b; width:24px; height:24px;"></button>
-<button class="color-btn" data-color="#d0f0c0" style="background-color:#d0f0c0; width:24px; height:24px;"></button>
-<button class="color-btn" data-color="#a2dff7" style="background-color:#a2dff7; width:24px; height:24px;"></button>
-<button class="color-btn" data-color="#d8d8d8" style="background-color:#d8d8d8; width:24px; height:24px;"></button>
-<button class="color-btn" data-color="#ffffff" style="background-color:#ffffff; width:24px; height:24px;"></button>
-<button id="mergeBtn">integrate</button>
-<button id="splitBtn">separate</button>
-<button id="insertCheckboxBtn">✅ check</button>
-<button id="insertBoldCheckboxBtn">☑️ check</button>
-<button id="uploadImageBtn">🖼️</button>
-<input accept="image/*" id="imageInput" style="display: none;" type="file"/>
-<button class="size-btn" data-size="2.56vw" style="font-size:2.56vw;">A</button>
-<button class="size-btn" data-size="1.92vw" style="font-size:1.92vw;">A</button>
-<button class="size-btn" data-size="1.6vw" style="font-size:1.6vw;">A</button>
-<button class="size-btn" data-size="1.28vw" style="font-size:1.28vw;">A</button>
-<button class="size-btn" data-size="0.8vw" style="font-size:0.8vw;">A</button>
-<button id="undoBtn">↩️</button>
-<button id="redoBtn">↪️</button>
-<button id="resetBtn">🔄</button>
-<button id="deleteBtn">🗑️</button>
-<button id="alignTopLeftBtn">left alignment</button>
-<button id="alignCenterBtn">centered</button>
-</div>
-<div class="grid-container" id="grid"></div>
-<script>
+  <input class="title-input" id="pageTitle" placeholder="Brain hacker" />
+
+  <div class="controls">
+    <button class="color-btn" data-color="#ffa500" style="background-color:#ffa500; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#f2c1c1" style="background-color:#f2c1c1; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#ffef5b" style="background-color:#ffef5b; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#d0f0c0" style="background-color:#d0f0c0; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#a2dff7" style="background-color:#a2dff7; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#d8d8d8" style="background-color:#d8d8d8; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#ffffff" style="background-color:#ffffff; width:24px; height:24px;"></button>
+    <button id="mergeBtn">integrate</button>
+    <button id="splitBtn">separate</button>
+    <button id="insertCheckboxBtn">✅ check</button>
+    <button id="insertBoldCheckboxBtn">☑️ check</button>
+    <button id="uploadImageBtn">🖼️</button>
+    <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+    <button class="size-btn" data-size="2.56vw" style="font-size:2.56vw;">A</button>
+    <button class="size-btn" data-size="1.92vw" style="font-size:1.92vw;">A</button>
+    <button class="size-btn" data-size="1.6vw" style="font-size:1.6vw;">A</button>
+    <button class="size-btn" data-size="1.28vw" style="font-size:1.28vw;">A</button>
+    <button class="size-btn" data-size="0.8vw" style="font-size:0.8vw;">A</button>
+    <button id="undoBtn">↩️</button>
+    <button id="redoBtn">↪️</button>
+    <button id="resetBtn">🔄</button>
+    <button id="deleteBtn">🗑️</button>
+    
+    <button id="alignTopLeftBtn">left alignment</button>
+    <button id="alignCenterBtn">centered</button>
+  </div>
+
+  <div class="grid-container" id="grid"></div>
+
+  <script>
     const grid = document.getElementById("grid");
     const cells = [];
     const selectedCells = new Set();
@@ -152,7 +155,7 @@
         const cell = getCell(data.row, data.col).element;
         const editable = cell.querySelector(".editable");
         const img = cell.querySelector("img");
-        editable.innerHTML = data.html || "";
+        editable.innerHTML = data.html;
         
         if (data.checkboxes) {
           const existing = editable.querySelectorAll("input[type='checkbox']");
@@ -180,7 +183,44 @@
             });
           });
         }
-);
+    
+          const existing = editable.querySelectorAll("input[type='checkbox']");
+          existing.forEach(e => e.closest("span")?.remove());
+          data.checkboxes.forEach(({ checked, text }) => {
+            const wrapper = document.createElement("span");
+            wrapper.style.display = "inline-flex";
+            wrapper.style.alignItems = "center";
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = checked;
+            checkbox.style.marginRight = "4px";
+            const span = document.createElement("span");
+            span.textContent = text;
+            span.contentEditable = true;
+            span.style.outline = "none";
+            if (checked) span.style.textDecoration = "line-through";
+            checkbox.addEventListener("change", () => {
+              span.style.textDecoration = checkbox.checked ? "line-through" : "none";
+              saveState();
+            });
+            wrapper.appendChild(checkbox);
+            wrapper.appendChild(span);
+            editable.prepend(wrapper);
+          });
+        }
+        editable.style.fontSize = data.fontSize || "";
+        editable.style.alignItems = data.alignItems || "flex-start";
+        editable.style.justifyContent = data.justifyContent || "flex-start";
+        editable.style.textAlign = data.textAlign || "left";
+        cell.style.backgroundColor = data.bgColor || "";
+        cell.style.display = data.display || "flex";
+        cell.style.gridRow = data.gridRow || "";
+        cell.style.gridColumn = data.gridColumn || "";
+        if (data.imgSrc) {
+          img.src = data.imgSrc;
+          img.style.display = "block";
+        }
+      });
     }
 
     function undo() {
@@ -431,7 +471,7 @@ document.getElementById("deleteBtn").addEventListener("click", () => {
   applyToSelectedCells(cell => {
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
-    editable.innerHTML = data.html || "";
+    editable.innerHTML = "";
     img.src = "";
     img.style.display = "none";
   });
@@ -507,4 +547,3 @@ document.getElementById("alignTopLeftBtn").addEventListener("click", () => {
   }
 });
   </script>
-</body></html>
