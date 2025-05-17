@@ -359,19 +359,17 @@ cell.addEventListener("click", (e) => {
   const area = (maxRow - minRow + 1) * (maxCol - minCol + 1);
   if (area !== selectedCells.size) return alert("隣接する長方形で選択してください。");
 
-  // Reset all to display and clear previous spans
-  document.querySelectorAll(".cell").forEach(cell => {
-    cell.style.gridRow = "";
-    cell.style.gridColumn = "";
-    cell.style.display = "flex";
-  });
-
   const base = getCell(minRow, minCol).element;
   base.style.gridRow = `${minRow + 1} / span ${maxRow - minRow + 1}`;
   base.style.gridColumn = `${minCol + 1} / span ${maxCol - minCol + 1}`;
+
   coords.forEach(([r, c]) => {
-    if (r === minRow && c === minCol) return;
-    getCell(r, c).element.style.display = "none";
+    const cell = getCell(r, c).element;
+    if (r === minRow && c === minCol) {
+      cell.style.display = "flex";
+    } else {
+      cell.style.display = "none";
+    }
   });
 
   selectedCells.clear();
