@@ -91,7 +91,6 @@
     <button id="mergeBtn">integrate</button>
     <button id="splitBtn">separate</button>
     <button id="insertCheckboxBtn">✅ check</button>
-    <button id="insertBoldCheckboxBtn">☑️ check</button>
     <button id="uploadImageBtn">🖼️</button>
     <input type="file" id="imageInput" accept="image/*" style="display: none;" />
     <button class="size-btn" data-size="2.56vw" style="font-size:2.56vw;">A</button>
@@ -137,10 +136,7 @@
           alignItems: editable.style.alignItems,
           justifyContent: editable.style.justifyContent,
           textAlign: editable.style.textAlign,
-          checkboxes: Array.from(editable.querySelectorAll("input[type='checkbox']:not(.bold-checkbox)"))
-            .map(cb => ({ checked: cb.checked, text: cb.nextElementSibling?.textContent || "" })),
-          boldCheckboxes: Array.from(editable.querySelectorAll("input.bold-checkbox"))
-            .map(cb => ({ checked: cb.checked, text: cb.nextElementSibling?.textContent || "" }))
+          checkboxes: Array.from(editable.querySelectorAll("input[type='checkbox']")).map(cb => ({ checked: cb.checked, text: cb.nextElementSibling?.textContent || "" }))
         };
       });
       localStorage.setItem("gridState", JSON.stringify(state));
@@ -159,57 +155,31 @@
         const img = cell.querySelector("img");
         editable.innerHTML = data.html;
         if (data.checkboxes) {
-  const existing = editable.querySelectorAll("input[type='checkbox']:not(.bold-checkbox)");
-  existing.forEach(e => e.closest("span")?.remove());
-  data.checkboxes.forEach(({ checked, text }) => {
-    const wrapper = document.createElement("span");
-    wrapper.style.display = "inline-flex";
-    wrapper.style.alignItems = "center";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.style.marginRight = "4px";
-    const span = document.createElement("span");
-    span.textContent = text;
-    span.contentEditable = true;
-    span.style.outline = "none";
-    if (checked) span.style.textDecoration = "line-through";
-    checkbox.addEventListener("change", () => {
-      span.style.textDecoration = checkbox.checked ? "line-through" : "none";
-      saveState();
-    });
-    wrapper.appendChild(checkbox);
-    wrapper.appendChild(span);
-    editable.prepend(wrapper);
-  });
-}
-
-if (data.boldCheckboxes) {
-  const existing = editable.querySelectorAll("input.bold-checkbox");
-  existing.forEach(e => e.closest("span")?.remove());
-  data.boldCheckboxes.forEach(({ checked, text }) => {
-    const wrapper = document.createElement("span");
-    wrapper.style.display = "inline-flex";
-    wrapper.style.alignItems = "center";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.classList.add("bold-checkbox");
-    checkbox.checked = checked;
-    checkbox.style.marginRight = "4px";
-    const span = document.createElement("span");
-    span.textContent = text;
-    span.contentEditable = true;
-    span.style.fontWeight = "bold";
-    span.style.outline = "none";
-    if (checked) span.style.textDecoration = "line-through";
-    checkbox.addEventListener("change", () => {
-      span.style.textDecoration = checkbox.checked ? "line-through" : "none";
-      saveState();
-    });
-    wrapper.appendChild(checkbox);
-    wrapper.appendChild(span);
-    editable.prepend(wrapper);
-  });
-}        editable.style.fontSize = data.fontSize || "";
+          const existing = editable.querySelectorAll("input[type='checkbox']");
+          existing.forEach(e => e.closest("span")?.remove());
+          data.checkboxes.forEach(({ checked, text }) => {
+            const wrapper = document.createElement("span");
+            wrapper.style.display = "inline-flex";
+            wrapper.style.alignItems = "center";
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = checked;
+            checkbox.style.marginRight = "4px";
+            const span = document.createElement("span");
+            span.textContent = text;
+            span.contentEditable = true;
+            span.style.outline = "none";
+            if (checked) span.style.textDecoration = "line-through";
+            checkbox.addEventListener("change", () => {
+              span.style.textDecoration = checkbox.checked ? "line-through" : "none";
+              saveState();
+            });
+            wrapper.appendChild(checkbox);
+            wrapper.appendChild(span);
+            editable.prepend(wrapper);
+          });
+        }
+        editable.style.fontSize = data.fontSize || "";
         editable.style.alignItems = data.alignItems || "flex-start";
         editable.style.justifyContent = data.justifyContent || "flex-start";
         editable.style.textAlign = data.textAlign || "left";
@@ -371,6 +341,7 @@ cell.addEventListener("click", (e) => {
   span.style.outline = "none";
   wrapper.appendChild(checkbox);
   wrapper.appendChild(span);
+
   checkbox.addEventListener("change", () => {
     const span = wrapper.querySelector('span');
     if (span && span.tagName === "SPAN") {
@@ -378,44 +349,15 @@ cell.addEventListener("click", (e) => {
     }
     saveState();
   });
-  return wrapper;
-}
 
-function createBoldLabeledCheckbox() {
-  const wrapper = document.createElement("span");
-  wrapper.style.display = "inline-flex";
-  wrapper.style.alignItems = "center";
-  const checkbox = document.createElement("input");
-  checkbox.type = "checkbox";
-  checkbox.classList.add("bold-checkbox");
-  checkbox.style.marginRight = "4px";
-  const span = document.createElement("span");
-  span.textContent = "項目";
-  span.contentEditable = true;
-  span.style.fontWeight = "bold";
-  span.style.outline = "none";
-  wrapper.appendChild(checkbox);
-  wrapper.appendChild(span);
-  checkbox.addEventListener("change", () => {
-    span.style.textDecoration = checkbox.checked ? "line-through" : "none";
-    saveState();
-  });
   return wrapper;
-}
+    }
 
     document.getElementById("insertCheckboxBtn").addEventListener("click", () => {
-  applyToSelectedCells(cell => {
-    const editable = cell.querySelector(".editable");
-    if (editable) editable.prepend(createLabeledCheckbox());
-  });
-});
-
-document.getElementById("insertBoldCheckboxBtn").addEventListener("click", () => {
-  applyToSelectedCells(cell => {
-    const editable = cell.querySelector(".editable");
-    if (editable) editable.prepend(createBoldLabeledCheckbox());
-  });
-});
+      applyToSelectedCells(cell => {
+        const editable = cell.querySelector(".editable");
+        if (editable) editable.prepend(createLabeledCheckbox());
+      });
     });
 
     document.getElementById("uploadImageBtn").addEventListener("click", () => {
