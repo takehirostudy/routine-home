@@ -169,7 +169,6 @@
             checkbox.style.marginRight = "4px";
             const span = document.createElement("span");
             span.textContent = text;
-            if (bold) span.style.fontWeight = "bold";
             span.contentEditable = true;
             span.style.outline = "none";
             if (checked) span.style.textDecoration = "line-through";
@@ -445,7 +444,7 @@ document.getElementById("deleteBtn").addEventListener("click", () => {
   applyToSelectedCells(cell => {
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
-    editable.innerHTML = "";
+    editable.innerHTML = data.html || "";
     img.src = "";
     img.style.display = "none";
   });
