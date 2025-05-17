@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Brain Hacker</title>
   <style>
     body { margin: 0; padding: 10px; font-family: sans-serif; }
@@ -78,13 +78,13 @@
 <input class="title-input" id="pageTitle" placeholder="Brain hacker" />
 
 <div class="controls">
-  <button class="color-btn" data-color="#f28b82" style="background-color:#f28b82; width:24px; height:24px;"></button>
-  <button class="color-btn" data-color="#fbbc04" style="background-color:#fbbc04; width:24px; height:24px;"></button>
-  <button class="color-btn" data-color="#fff475" style="background-color:#fff475; width:24px; height:24px;"></button>
-  <button class="color-btn" data-color="#ccff90" style="background-color:#ccff90; width:24px; height:24px;"></button>
-  <button class="color-btn" data-color="#a7ffeb" style="background-color:#a7ffeb; width:24px; height:24px;"></button>
-  <button class="color-btn" data-color="#d7aefb" style="background-color:#d7aefb; width:24px; height:24px;"></button>
-  <button class="color-btn" data-color="#e0e0e0" style="background-color:#e0e0e0; width:24px; height:24px;"></button>
+  <button class="color-btn" data-color="#ffa500" style="background-color:#ffa500; width:24px; height:24px;"></button>
+  <button class="color-btn" data-color="#f2c1c1" style="background-color:#f2c1c1; width:24px; height:24px;"></button>
+  <button class="color-btn" data-color="#ffef5b" style="background-color:#ffef5b; width:24px; height:24px;"></button>
+  <button class="color-btn" data-color="#d0f0c0" style="background-color:#d0f0c0; width:24px; height:24px;"></button>
+  <button class="color-btn" data-color="#a2dff7" style="background-color:#a2dff7; width:24px; height:24px;"></button>
+  <button class="color-btn" data-color="#d8d8d8" style="background-color:#d8d8d8; width:24px; height:24px;"></button>
+  <button class="color-btn" data-color="#ffffff" style="background-color:#ffffff; width:24px; height:24px;"></button>
   <button id="mergeBtn">結合</button>
   <button id="splitBtn">分離</button>
   <button id="insertCheckboxBtn">☑ チェック</button>
@@ -103,6 +103,7 @@
 <div class="grid-container" id="grid"></div>
 
 <script>
+// JavaScript 全体
 const grid = document.getElementById("grid");
 const cells = [];
 const selectedCells = new Set();
