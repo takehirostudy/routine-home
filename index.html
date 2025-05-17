@@ -298,13 +298,56 @@
       event.target.value = "";
     });
 
-    window.addEventListener("load", () => {
-      createGrid();
-      const saved = localStorage.getItem("gridState");
-      if (saved) {
-        restoreState(saved);
-        history.push(saved);
-        historyIndex = 0;
-      }
-    });
+    document.getElementById("mergeBtn").addEventListener("click", () => {
+  if (selectedCells.size < 2) return alert("2つ以上のセルを選択してください。");
+  const coords = [...selectedCells].map(k => k.split(',').map(Number));
+  const rows = coords.map(c => c[0]);
+  const cols = coords.map(c => c[1]);
+  const minRow = Math.min(...rows), maxRow = Math.max(...rows);
+  const minCol = Math.min(...cols), maxCol = Math.max(...cols);
+  const area = (maxRow - minRow + 1) * (maxCol - minCol + 1);
+  if (area !== selectedCells.size) return alert("隣接する長方形で選択してください");
+  const base = getCell(minRow, minCol).element;
+  base.style.gridRow = `${minRow + 1} / span ${maxRow - minRow + 1}`;
+  base.style.gridColumn = `${minCol + 1} / span ${maxCol - minCol + 1}`;
+  coords.forEach(([r, c]) => {
+    if (r === minRow && c === minCol) return;
+    getCell(r, c).element.style.display = "none";
+  });
+  selectedCells.clear();
+  document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+  saveState();
+});
+
+document.getElementById("splitBtn").addEventListener("click", () => {
+  if (selectedCells.size !== 1) return alert("1つの結合セルを選択してください。");
+  const [row, col] = [...selectedCells][0].split(',').map(Number);
+  const base = getCell(row, col).element;
+  base.style.gridRow = "";
+  base.style.gridColumn = "";
+  document.querySelectorAll(".cell").forEach(cell => cell.style.display = "flex");
+  selectedCells.clear();
+  document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+  saveState();
+});
+
+document.getElementById("deleteBtn").addEventListener("click", () => {
+  applyToSelectedCells(cell => {
+    const editable = cell.querySelector(".editable");
+    const img = cell.querySelector("img");
+    editable.innerHTML = "";
+    img.src = "";
+    img.style.display = "none";
+  });
+});
+
+window.addEventListener("load", () => {
+  createGrid();
+  const saved = localStorage.getItem("gridState");
+  if (saved) {
+    restoreState(saved);
+    history.push(saved);
+    historyIndex = 0;
+  }
+});
   </script>
