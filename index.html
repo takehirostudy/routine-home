@@ -246,25 +246,25 @@
     });
 
     function createLabeledCheckbox() {
-      const wrapper = document.createElement("label");
-      wrapper.style.display = "flex";
-      wrapper.style.alignItems = "center";
-      wrapper.style.gap = "4px";
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      const span = document.createElement("span");
-      span.textContent = "";
-      span.contentEditable = true;
-      span.style.outline = "none";
+  const wrapper = document.createElement("span");
+  wrapper.style.display = "inline-flex";
+  wrapper.style.alignItems = "center";
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.style.marginRight = "4px";
+  const span = document.createElement("span");
+  span.textContent = "";
+  span.contentEditable = true;
+  span.style.outline = "none";
+  wrapper.appendChild(checkbox);
+  wrapper.appendChild(span);
 
-      checkbox.addEventListener("change", () => {
-        span.style.textDecoration = checkbox.checked ? "line-through" : "none";
-        saveState();
-      });
+  checkbox.addEventListener("change", () => {
+    span.style.textDecoration = checkbox.checked ? "line-through" : "none";
+    saveState();
+  });
 
-      wrapper.appendChild(checkbox);
-      wrapper.appendChild(span);
-      return wrapper;
+  return wrapper;
     }
 
     document.getElementById("insertCheckboxBtn").addEventListener("click", () => {
