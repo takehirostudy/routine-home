@@ -133,10 +133,15 @@
           gridRow: element.style.gridRow,
           gridColumn: element.style.gridColumn,
           imgSrc: img?.src || "",
+          alignItems: editable.style.alignItems,
+          justifyContent: editable.style.justifyContent,
+          textAlign: editable.style.textAlign,
           checkboxes: Array.from(editable.querySelectorAll("input[type='checkbox']")).map(cb => ({ checked: cb.checked, text: cb.nextElementSibling?.textContent || "" }))
         };
       });
       localStorage.setItem("gridState", JSON.stringify(state));
+      const titleInput = document.getElementById("pageTitle");
+      localStorage.setItem("pageTitle", titleInput.value);
       history = history.slice(0, historyIndex + 1);
       history.push(JSON.stringify(state));
       historyIndex++;
@@ -175,6 +180,9 @@
           });
         }
         editable.style.fontSize = data.fontSize || "";
+        editable.style.alignItems = data.alignItems || "flex-start";
+        editable.style.justifyContent = data.justifyContent || "flex-start";
+        editable.style.textAlign = data.textAlign || "left";
         cell.style.backgroundColor = data.bgColor || "";
         cell.style.display = data.display || "flex";
         cell.style.gridRow = data.gridRow || "";
