@@ -10,7 +10,7 @@
     .grid-container {
       display: grid;
       grid-template-columns: repeat(20, 1fr);
-      grid-template-rows: repeat(10, 1fr);
+      grid-template-rows: repeat(16, 1fr);
       width: 100vw;
       height: 80vh;
       gap: 1px;
@@ -173,7 +173,7 @@
     }
 
     function createGrid() {
-      for (let row = 0; row < 10; row++) {
+      for (let row = 0; row < 16; row++) {
         for (let col = 0; col < 20; col++) {
           const cell = document.createElement("div");
           cell.classList.add("cell");
