@@ -103,74 +103,8 @@
     const history = [];
     let historyIndex = -1;
 
-    function getCell(row, col) {
-      return cells.find(c => c.row === row && c.col === col);
-    }
-
-    function saveHistory() {
-      const data = grid.innerHTML;
-      history.splice(historyIndex + 1);
-      history.push(data);
-      historyIndex++;
-      localStorage.setItem("gridData", data);
-    }
-
-    function loadGridFromStorage() {
-      const saved = localStorage.getItem("gridData");
-      if (saved) {
-        grid.innerHTML = saved;
-        restoreCellEvents();
-      } else {
-        createGrid();
-      }
-    }
-
-    function resetGrid() {
-      localStorage.removeItem("gridData");
-      location.reload();
-    }
-
-    function undo() {
-      if (historyIndex > 0) {
-        historyIndex--;
-        grid.innerHTML = history[historyIndex];
-        restoreCellEvents();
-      }
-    }
-
-    function redo() {
-      if (historyIndex < history.length - 1) {
-        historyIndex++;
-        grid.innerHTML = history[historyIndex];
-        restoreCellEvents();
-      }
-    }
-
-    function restoreCellEvents() {
-      [...grid.children].forEach(cell => {
-        cell.addEventListener("click", (e) => {
-          const row = cell.dataset.row;
-          const col = cell.dataset.col;
-          const key = `${row},${col}`;
-          if (e.ctrlKey || e.metaKey) {
-            if (selectedCells.has(key)) {
-              selectedCells.delete(key);
-              cell.classList.remove("selected");
-            } else {
-              selectedCells.add(key);
-              cell.classList.add("selected");
-            }
-          } else {
-            selectedCells.clear();
-            document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-            selectedCells.add(key);
-            cell.classList.add("selected");
-          }
-        });
-      });
-    }
-
     function createGrid() {
+      grid.innerHTML = "";
       for (let row = 0; row < 10; row++) {
         for (let col = 0; col < 20; col++) {
           const cell = document.createElement("div");
@@ -181,8 +115,6 @@
           const editable = document.createElement("div");
           editable.classList.add("editable");
           editable.contentEditable = true;
-
-          editable.addEventListener("input", saveHistory);
 
           const img = document.createElement("img");
           img.style.display = "none";
@@ -212,14 +144,69 @@
           cells.push({ row, col, element: cell });
         }
       }
-      saveHistory();
+    }
+
+    function saveGridState() {
+      const state = Array.from(cells).map(({ row, col, element }) => {
+        const editable = element.querySelector(".editable");
+        const img = element.querySelector("img");
+        return {
+          row,
+          col,
+          text: editable.innerHTML,
+          fontSize: editable.style.fontSize,
+          bgColor: element.style.backgroundColor,
+          checkbox: editable.querySelector("input[type='checkbox']")?.checked || false,
+          image: img.src !== location.href ? img.src : null
+        };
+      });
+      localStorage.setItem("gridData", JSON.stringify(state));
+    }
+
+    function loadGridState() {
+      const saved = localStorage.getItem("gridData");
+      if (!saved) return;
+      const state = JSON.parse(saved);
+      state.forEach(data => {
+        const cell = getCell(data.row, data.col).element;
+        const editable = cell.querySelector(".editable");
+        const img = cell.querySelector("img");
+        editable.innerHTML = data.text;
+        if (data.fontSize) editable.style.fontSize = data.fontSize;
+        if (data.bgColor) cell.style.backgroundColor = data.bgColor;
+        if (data.checkbox) {
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = true;
+          checkbox.addEventListener("change", () => {
+            editable.style.textDecoration = checkbox.checked ? "line-through" : "none";
+          });
+          editable.prepend(checkbox);
+          editable.style.textDecoration = "line-through";
+        }
+        if (data.image) {
+          img.src = data.image;
+          img.style.display = "block";
+        }
+      });
+    }
+
+    function getCell(row, col) {
+      return cells.find(c => c.row === row && c.col === col);
+    }
+
+    function resetGrid() {
+      localStorage.removeItem("gridData");
+      location.reload();
     }
 
     document.getElementById("resetBtn").addEventListener("click", resetGrid);
-    document.getElementById("undoBtn").addEventListener("click", undo);
-    document.getElementById("redoBtn").addEventListener("click", redo);
-    window.addEventListener("load", loadGridFromStorage);
-    window.addEventListener("beforeunload", saveHistory);
+    window.addEventListener("beforeunload", saveGridState);
+
+    window.addEventListener("load", () => {
+      createGrid();
+      loadGridState();
+    });
   </script>
 </body>
 </html>
