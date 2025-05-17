@@ -202,15 +202,33 @@ let dragStart = null;
 let dragEnd = null;
 
 cell.addEventListener("mousedown", (e) => {
-  if (e.shiftKey) {
+  if (e.shiftKey || e.buttons === 1) {
     isDragging = true;
-    dragStart = { row, col };
+    dragStart = { row: row, col: col };
+  }
+});;
   }
 });
 
 cell.addEventListener("mouseover", (e) => {
-  if (isDragging && e.buttons === 1) {
-    dragEnd = { row, col };
+  if (isDragging && (e.buttons === 1 || e.which === 1)) {
+    dragEnd = { row: row, col: col };
+    selectedCells.clear();
+    document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+    const minRow = Math.min(dragStart.row, dragEnd.row);
+    const maxRow = Math.max(dragStart.row, dragEnd.row);
+    const minCol = Math.min(dragStart.col, dragEnd.col);
+    const maxCol = Math.max(dragStart.col, dragEnd.col);
+    for (let r = minRow; r <= maxRow; r++) {
+      for (let c = minCol; c <= maxCol; c++) {
+        const key = `${r},${c}`;
+        selectedCells.add(key);
+        const selectedCell = getCell(r, c)?.element;
+        if (selectedCell) selectedCell.classList.add("selected");
+      }
+    }
+  }
+});;
     selectedCells.clear();
     document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
     const minRow = Math.min(dragStart.row, dragEnd.row);
@@ -302,6 +320,11 @@ cell.addEventListener("click", (e) => {
 
   checkbox.addEventListener("change", () => {
     const span = wrapper.querySelector('span');
+    if (checkbox.checked) {
+      span.style.textDecoration = "line-through";
+    } else {
+      span.style.textDecoration = "none";
+    }
     if (span) {
       span.style.textDecoration = checkbox.checked ? "line-through" : "none";
     }
