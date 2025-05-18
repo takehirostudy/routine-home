@@ -295,7 +295,11 @@
       createGrid();
       restoreState();
       document.getElementById("pageTitle").value = localStorage.getItem("pageTitle") || "";
-      document.getElementById("pageTitle").addEventListener("input", saveState);
+      const pageTitle = document.getElementById("pageTitle");
+      pageTitle.addEventListener("input", () => {
+        localStorage.setItem("pageTitle", pageTitle.value);
+        saveState();
+      });
       // 色変更ボタン
       document.querySelectorAll(".color-btn").forEach(btn => {
         btn.addEventListener("click", () => {
