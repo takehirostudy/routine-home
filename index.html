@@ -146,6 +146,8 @@ document.getElementById("pageTitle").addEventListener("input", () => {
 });
 
 // === グリッド生成 ===
+const pageTitle = document.getElementById("pageTitle");
+pageTitle.addEventListener("input", saveState);
 const grid = document.getElementById("grid");
 for (let row = 0; row < 16; row++) {
   for (let col = 0; col < 20; col++) {
@@ -253,6 +255,9 @@ function applyHistory(stateStr) {
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
     editable.innerHTML = typeof data.html === 'string' ? data.html : "";
+editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
+  cb.checked = cb.hasAttribute("checked");
+});
     editable.style.fontSize = data.fontSize;
     editable.style.alignItems = data.alignItems;
     editable.style.justifyContent = data.justifyContent;
@@ -335,6 +340,9 @@ function restoreState() {
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
     editable.innerHTML = typeof data.html === 'string' ? data.html : "";
+editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
+  cb.checked = cb.hasAttribute("checked");
+});
     editable.style.fontSize = data.fontSize;
     editable.style.alignItems = data.alignItems;
     editable.style.justifyContent = data.justifyContent;
@@ -363,6 +371,7 @@ function restoreState() {
 }
 
 restoreState();
+window.addEventListener("beforeunload", saveState);
 // === 色変更機能 ===
 for (const btn of document.querySelectorAll(".color-btn")) {
   btn.addEventListener("click", () => {
@@ -523,4 +532,3 @@ document.getElementById("resetBtn").addEventListener("click", () => {
 </script>
 </body>
 </html>
-
