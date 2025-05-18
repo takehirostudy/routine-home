@@ -538,12 +538,25 @@ for (const btn of document.querySelectorAll(".size-btn")) {
 // === リセットボタン ===
 document.getElementById("resetBtn").addEventListener("click", () => {
   if (confirm("全データをリセットしますか？")) {
-    const keys = Object.keys(localStorage);
-    keys.forEach(k => {
-      if (k.startsWith("brainhack-")) localStorage.removeItem(k);
+    // 各セルの内容、画像、スタイルをクリア
+    document.querySelectorAll(".cell").forEach(cell => {
+      const editable = cell.querySelector(".editable");
+      const img = cell.querySelector("img");
+      editable.innerHTML = "";
+      editable.style.fontSize = "";
+      editable.style.alignItems = "";
+      editable.style.justifyContent = "";
+      editable.style.textAlign = "";
+      cell.style.backgroundColor = "";
+      cell.style.display = "flex";
+      cell.style.gridRow = "";
+      cell.style.gridColumn = "";
+      img.src = "";
+      img.style.display = "none";
     });
+    saveState();
     localStorage.removeItem(`brainhack-${getTodayKey()}`);
-    localStorage.removeItem("pageTitle");
+    // タイトルは削除しない
     location.reload();
   }
 });
