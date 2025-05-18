@@ -131,9 +131,10 @@
           cell.dataset.row = row;
           cell.dataset.col = col;
 
-          const editable = document.createElement("div");
-          editable.className = "editable";
-          editable.contentEditable = true;
+          $1
+          editable.addEventListener("input", () => {
+            saveState();
+          });
 
           const img = document.createElement("img");
           img.style.display = "none";
