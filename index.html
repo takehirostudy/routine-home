@@ -522,6 +522,19 @@ document.getElementById("deleteBtn").addEventListener("click", () => {
   saveState();
 });
 
+// === フォントサイズ変更 ===
+for (const btn of document.querySelectorAll(".size-btn")) {
+  btn.addEventListener("click", () => {
+    const size = btn.dataset.size;
+    for (const key of selectedCells) {
+      const [r, c] = key.split(',');
+      const editable = document.querySelector(`.cell[data-row='${r}'][data-col='${c}'] .editable`);
+      editable.style.fontSize = size;
+    }
+    saveState();
+  });
+}
+
 // === リセットボタン ===
 document.getElementById("resetBtn").addEventListener("click", () => {
   if (confirm("全データをリセットしますか？")) {
