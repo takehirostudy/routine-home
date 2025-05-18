@@ -27,54 +27,26 @@
     }
     .cell.selected { outline: 2px solid #4285f4; }
     .editable {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: flex-start;
-      justify-content: flex-start;
-      flex-direction: column;
-      font-size: 1vw;
-      text-align: left;
-      padding: 2px;
-      border: none;
-      outline: none;
-      overflow: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: flex-start; justify-content: flex-start;
+      font-size: 1vw; padding: 2px;
+      text-align: left; border: none; outline: none;
+      overflow: auto; white-space: pre-wrap; word-break: break-word;
     }
-    .cell img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-    }
-    button {
-      padding: 4px 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
+    .cell img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    button { padding: 4px 6px; font-size: 12px; cursor: pointer; }
     .size-btn {
-      width: 32px;
-      height: 32px;
-      border: none;
-      border-radius: 4px;
+      width: 32px; height: 32px;
+      border: none; border-radius: 4px;
       background-color: #f0f0f0;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
     }
     .title-input {
-      font-size: 2em;
-      width: 100%;
-      border: none;
-      color: black;
-      outline: none;
-      text-align: center;
+      font-size: 2em; width: 100%; border: none;
+      color: black; outline: none; text-align: center;
     }
-    .title-input::placeholder {
-      color: #bbb;
-    }
+    .title-input::placeholder { color: #bbb; }
   </style>
 </head>
 <body>
@@ -114,7 +86,6 @@
 
   <div class="grid-container" id="grid"></div>
 
-  <!-- 正しく task.js を読み込み -->
   <script src="task.js"></script>
 </body>
 </html>
