@@ -144,30 +144,21 @@ function saveState() {
   const state = [...grid.children].map(cell => {
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
-    const checkboxes = [...editable.querySelectorAll("input[type='checkbox']")].map(cb => {
-      const span = cb.nextElementSibling;
-      return {
-        checked: cb.checked,
-        text: span?.textContent || '',
-        bold: span?.style.fontWeight === 'bold',
-        textDecoration: span?.style.textDecoration || ''
-      };
-    });
+        });
     return {
-      row: cell.dataset.row,
-      col: cell.dataset.col,
-      html: editable.innerHTML,
-      fontSize: editable.style.fontSize,
-      bgColor: cell.style.backgroundColor,
-      display: cell.style.display,
-      gridRow: cell.style.gridRow,
-      gridColumn: cell.style.gridColumn,
-      imgSrc: img?.src || '',
-      alignItems: editable.style.alignItems,
-      justifyContent: editable.style.justifyContent,
-      textAlign: editable.style.textAlign,
-      checkboxes
-    };
+    row: cell.dataset.row,
+    col: cell.dataset.col,
+    html: editable.innerHTML,
+    fontSize: editable.style.fontSize,
+    bgColor: cell.style.backgroundColor,
+    display: cell.style.display,
+    gridRow: cell.style.gridRow,
+    gridColumn: cell.style.gridColumn,
+    imgSrc: img?.src || '',
+    alignItems: editable.style.alignItems,
+    justifyContent: editable.style.justifyContent,
+    textAlign: editable.style.textAlign
+  };
   });
   localStorage.setItem("gridState", JSON.stringify(state));
   localStorage.setItem("pageTitle", titleInput.value);
@@ -187,6 +178,19 @@ function restoreState() {
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
     editable.innerHTML = data.html || '';
+    // チェックボックスの状態復元
+    editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
+      const span = cb.nextElementSibling;
+      if (cb.checked) {
+        if (span) span.style.textDecoration = "line-through";
+      } else {
+        if (span) span.style.textDecoration = "none";
+      }
+      cb.addEventListener("change", () => {
+        if (span) span.style.textDecoration = cb.checked ? "line-through" : "none";
+        saveState();
+      });
+    });
     editable.style.fontSize = data.fontSize || '';
     editable.style.alignItems = data.alignItems || 'flex-start';
     editable.style.justifyContent = data.justifyContent || 'flex-start';
