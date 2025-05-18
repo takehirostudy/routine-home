@@ -144,6 +144,13 @@ function saveState() {
   const state = [...grid.children].map(cell => {
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
+    editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
+      if (cb.checked) {
+        cb.setAttribute("checked", "checked");
+      } else {
+        cb.removeAttribute("checked");
+      }
+    });
     return {
     row: cell.dataset.row,
     col: cell.dataset.col,
@@ -177,21 +184,8 @@ function restoreState() {
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
     editable.innerHTML = data.html || '';
+
     // チェックボックスのチェック状態を正しく復元
-    editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
-      if (cb.hasAttribute('checked')) cb.checked = true;
-      const span = cb.nextElementSibling;
-      if (cb.checked) {
-        if (span) span.style.textDecoration = "line-through";
-      } else {
-        if (span) span.style.textDecoration = "none";
-      }
-      cb.addEventListener("change", () => {
-        if (span) span.style.textDecoration = cb.checked ? "line-through" : "none";
-        saveState();
-      });
-    });
-    // チェックボックスの状態復元
     editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
       cb.checked = cb.checked || cb.hasAttribute('checked');
       const span = cb.nextElementSibling;
@@ -205,7 +199,7 @@ function restoreState() {
         saveState();
       });
     });
-    });
+
     editable.style.fontSize = data.fontSize || '';
     editable.style.alignItems = data.alignItems || 'flex-start';
     editable.style.justifyContent = data.justifyContent || 'flex-start';
@@ -300,9 +294,6 @@ window.onload = () => {
     });
     saveState();
   });
-  createGrid();
-  restoreState();
-
   // タイトル変更
   titleInput.addEventListener("input", saveState);
 
