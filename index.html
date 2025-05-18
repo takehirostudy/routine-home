@@ -98,6 +98,35 @@
 </head>
 <body>
   <a href="record.html" class="top-right-btn">Record</a>
+  <div id="dateDisplay"></div>
+  <input class="title-input" id="pageTitle" placeholder="Brain hacker" />
+  <div class="controls">
+    <button class="color-btn" data-color="#ffa500" style="background-color:#ffa500; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#f2c1c1" style="background-color:#f2c1c1; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#ffef5b" style="background-color:#ffef5b; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#d0f0c0" style="background-color:#d0f0c0; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#a2dff7" style="background-color:#a2dff7; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#d8d8d8" style="background-color:#d8d8d8; width:24px; height:24px;"></button>
+    <button class="color-btn" data-color="#ffffff" style="background-color:#ffffff; width:24px; height:24px;"></button>
+    <button id="mergeBtn">integrate</button>
+    <button id="splitBtn">separate</button>
+    <button id="insertCheckboxBtn">✅ check</button>
+    <button id="insertBoldCheckboxBtn">☑️ check</button>
+    <button id="uploadImageBtn">🖼️</button>
+    <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+    <button class="size-btn" data-size="2.56vw" style="font-size:2.56vw;">A</button>
+    <button class="size-btn" data-size="1.92vw" style="font-size:1.92vw;">A</button>
+    <button class="size-btn" data-size="1.6vw" style="font-size:1.6vw;">A</button>
+    <button class="size-btn" data-size="1.28vw" style="font-size:1.28vw;">A</button>
+    <button class="size-btn" data-size="0.8vw" style="font-size:0.8vw;">A</button>
+    <button id="undoBtn">↩️</button>
+    <button id="redoBtn">↪️</button>
+    <button id="resetBtn">🔄</button>
+    <button id="deleteBtn">🗑️</button>
+    <button id="alignTopLeftBtn">left alignment</button>
+    <button id="alignCenterBtn">centered</button>
+  </div>
+  <div class="grid-container" id="grid"></div>
 <!-- 中略なしでJavaScriptを含む完全なコードを展開 -->
 <script>
 // === 日付とタイトル ===
@@ -484,3 +513,4 @@ document.getElementById("resetBtn").addEventListener("click", () => {
 </script>
 </body>
 </html>
+
