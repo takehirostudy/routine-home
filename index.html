@@ -85,7 +85,7 @@
 <body>
   <div id="dateDisplay"></div>
   <input class="title-input" id="pageTitle" placeholder="Brain hacker" />
-  <div class="controls" id="controls">
+  <div class="controls">
     <button class="color-btn" data-color="#ffa500" style="background-color:#ffa500; width:24px; height:24px;"></button>
     <button class="color-btn" data-color="#f2c1c1" style="background-color:#f2c1c1; width:24px; height:24px;"></button>
     <button class="color-btn" data-color="#ffef5b" style="background-color:#ffef5b; width:24px; height:24px;"></button>
@@ -110,393 +110,414 @@
     <button id="deleteBtn">🗑️</button>
     <button id="alignTopLeftBtn">left alignment</button>
     <button id="alignCenterBtn">centered</button>
-</div>
+  </div>
   <div class="grid-container" id="grid"></div>
   <script>
-  let grid;
-  const selectedCells = new Set();
-  let history = [], historyIndex = -1;
+    const grid = document.getElementById("grid");
+    let history = [], historyIndex = -1;
+    const selectedCells = new Set();
 
-  function getTodayKey() {
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, "0");
-    const dd = String(now.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  }
+    function getTodayKey() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    }
 
-  function getCell(row, col) {
-    return [...grid.children].find(c => c.dataset.row == row && c.dataset.col == col);
-  }
+    function getYesterdayKey() {
+      const now = new Date();
+      now.setDate(now.getDate() - 1);
+      return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    }
 
-  function saveState() {
-    const state = [...grid.children].map(cell => {
-      const editable = cell.querySelector(".editable");
-      const img = cell.querySelector("img");
-      editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
-        if (cb.checked) {
-          cb.setAttribute("checked", "checked");
-        } else {
-          cb.removeAttribute("checked");
+    function getCell(row, col) {
+      return [...grid.children].find(c => c.dataset.row == row && c.dataset.col == col);
+    }
+
+    function saveState() {
+      const state = [...grid.children].map(cell => {
+        const editable = cell.querySelector(".editable");
+        const img = cell.querySelector("img");
+        editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
+          if (cb.checked) {
+            cb.setAttribute("checked", "checked");
+          } else {
+            cb.removeAttribute("checked");
+          }
+        });
+        return {
+          row: cell.dataset.row,
+          col: cell.dataset.col,
+          html: editable.innerHTML,
+          fontSize: editable.style.fontSize,
+          bgColor: cell.style.backgroundColor,
+          display: cell.style.display,
+          gridRow: cell.style.gridRow,
+          gridColumn: cell.style.gridColumn,
+          imgSrc: img?.src || '',
+          alignItems: editable.style.alignItems,
+          justifyContent: editable.style.justifyContent,
+          textAlign: editable.style.textAlign
+        };
+      });
+      localStorage.setItem("pageTitle", document.getElementById("pageTitle").value);
+      localStorage.setItem(`brainhack-${getTodayKey()}`, JSON.stringify(state));
+      history = history.slice(0, historyIndex + 1);
+      history.push(JSON.stringify(state));
+      historyIndex++;
+    }
+
+    function restoreState() {
+      const todayKey = getTodayKey();
+      const savedToday = localStorage.getItem(`brainhack-${todayKey}`);
+      let state = null;
+
+      if (savedToday) {
+        state = JSON.parse(savedToday);
+      } else {
+        const savedYesterday = localStorage.getItem(`brainhack-${getYesterdayKey()}`);
+        if (savedYesterday) {
+          const oldState = JSON.parse(savedYesterday);
+          state = oldState.map(cell => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(`<div>${cell.html}</div>`, 'text/html');
+            const tempDiv = doc.body.firstChild;
+            const filteredHTML = Array.from(tempDiv.childNodes).filter(child => {
+              const cb = child.querySelector?.("input[type='checkbox']");
+              const span = child.querySelector?.("span");
+              return !(cb && span?.style.fontWeight === "bold");
+            });
+            const container = document.createElement("div");
+            filteredHTML.forEach(node => container.appendChild(node.cloneNode(true)));
+            return { ...cell, html: container.innerHTML };
+          });
+        }
+      }
+
+      if (!state) return;
+
+      state.forEach(data => {
+        const cell = getCell(data.row, data.col);
+        if (!cell) return;
+        const editable = cell.querySelector(".editable");
+        const img = cell.querySelector("img");
+        editable.innerHTML = data.html || '';
+        editable.style.fontSize = data.fontSize || '';
+        editable.style.alignItems = data.alignItems || 'flex-start';
+        editable.style.justifyContent = data.justifyContent || 'flex-start';
+        editable.style.textAlign = data.textAlign || 'left';
+
+        editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
+          cb.checked = cb.hasAttribute("checked");
+          const span = cb.nextElementSibling;
+          if (span) span.style.textDecoration = cb.checked ? "line-through" : "none";
+          cb.addEventListener("change", () => {
+            if (span) span.style.textDecoration = cb.checked ? "line-through" : "none";
+            saveState();
+          });
+        });
+
+        cell.style.backgroundColor = data.bgColor || '';
+        cell.style.display = data.display || 'flex';
+        cell.style.gridRow = data.gridRow || '';
+        cell.style.gridColumn = data.gridColumn || '';
+        if (data.imgSrc) {
+          img.src = data.imgSrc;
+          img.style.display = 'block';
         }
       });
-      return {
-        row: cell.dataset.row,
-        col: cell.dataset.col,
-        html: editable.innerHTML,
-        fontSize: editable.style.fontSize,
-        bgColor: cell.style.backgroundColor,
-        display: cell.style.display,
-        gridRow: cell.style.gridRow,
-        gridColumn: cell.style.gridColumn,
-        imgSrc: img?.src || '',
-        alignItems: editable.style.alignItems,
-        justifyContent: editable.style.justifyContent,
-        textAlign: editable.style.textAlign
-      };
-    });
-    localStorage.setItem("pageTitle", document.getElementById("pageTitle").value);
-    localStorage.setItem(`brainhack-${getTodayKey()}`, JSON.stringify(state));
-    history = history.slice(0, historyIndex + 1);
-    history.push(JSON.stringify(state));
-    historyIndex++;
-  }
+    }
 
-  function restoreState() {
-    const todayKey = getTodayKey();
-    const saved = localStorage.getItem(`brainhack-${todayKey}`);
-    if (!saved) return;
-    const state = JSON.parse(saved);
-    state.forEach(data => {
-      const cell = [...grid.children].find(c => c.dataset.row == data.row && c.dataset.col == data.col);
-      if (!cell) return;
-      const editable = cell.querySelector(".editable");
-      const img = cell.querySelector("img");
-      editable.innerHTML = data.html || '';
-      editable.style.fontSize = data.fontSize || '';
-      editable.style.alignItems = data.alignItems || 'flex-start';
-      editable.style.justifyContent = data.justifyContent || 'flex-start';
-      editable.style.textAlign = data.textAlign || 'left';
-
-      editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
-        cb.checked = cb.hasAttribute("checked");
-        const span = cb.nextElementSibling;
-        if (span) {
-          span.style.textDecoration = cb.checked ? "line-through" : "none";
+    function createGrid() {
+      for (let row = 0; row < 16; row++) {
+        for (let col = 0; col < 20; col++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          cell.dataset.row = row;
+          cell.dataset.col = col;
+          const editable = document.createElement("div");
+          editable.className = "editable";
+          editable.contentEditable = true;
+          editable.addEventListener("input", saveState);
+          const img = document.createElement("img");
+          img.style.display = "none";
+          cell.appendChild(editable);
+          cell.appendChild(img);
+          grid.appendChild(cell);
         }
-        cb.addEventListener("change", () => {
-          if (span) span.style.textDecoration = cb.checked ? "line-through" : "none";
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      let isDragging = false;
+      let dragStart = null;
+
+      grid.addEventListener("mousedown", (e) => {
+        if (!e.target.closest(".cell")) return;
+        const cell = e.target.closest(".cell");
+        const row = parseInt(cell.dataset.row);
+        const col = parseInt(cell.dataset.col);
+        if (e.shiftKey) {
+          isDragging = true;
+          dragStart = { row, col };
+        } else {
+          selectedCells.clear();
+          document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+          const key = `${row},${col}`;
+          selectedCells.add(key);
+          cell.classList.add("selected");
+        }
+      });
+
+      grid.addEventListener("mousemove", (e) => {
+        if (!isDragging || !e.shiftKey || !e.target.closest(".cell")) return;
+        const cell = e.target.closest(".cell");
+        const endRow = parseInt(cell.dataset.row);
+        const endCol = parseInt(cell.dataset.col);
+        const minRow = Math.min(dragStart.row, endRow);
+        const maxRow = Math.max(dragStart.row, endRow);
+        const minCol = Math.min(dragStart.col, endCol);
+        const maxCol = Math.max(dragStart.col, endCol);
+        selectedCells.clear();
+        document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+        for (let r = minRow; r <= maxRow; r++) {
+          for (let c = minCol; c <= maxCol; c++) {
+            const key = `${r},${c}`;
+            selectedCells.add(key);
+            const targetCell = getCell(r, c);
+            if (targetCell) targetCell.classList.add("selected");
+          }
+        }
+      });
+
+      window.addEventListener("mouseup", () => {
+        isDragging = false;
+      });
+      document.getElementById("dateDisplay").textContent = `${getTodayKey()} (${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date().getDay()]})`;
+      createGrid();
+      restoreState();
+      document.getElementById("pageTitle").value = localStorage.getItem("pageTitle") || "";
+      document.getElementById("pageTitle").addEventListener("input", saveState);
+      // 色変更ボタン
+      document.querySelectorAll(".color-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const color = btn.dataset.color;
+          selectedCells.forEach(key => {
+            const [r, c] = key.split(',').map(Number);
+            const cell = getCell(r, c);
+            if (cell) cell.style.backgroundColor = color;
+          });
           saveState();
         });
       });
-      cell.style.backgroundColor = data.bgColor || '';
-      cell.style.display = data.display || 'flex';
-      cell.style.gridRow = data.gridRow || '';
-      cell.style.gridColumn = data.gridColumn || '';
-      if (data.imgSrc) {
-        img.src = data.imgSrc;
-        img.style.display = 'block';
-      }
-    });
-  }
 
-  function createGrid() {
-    for (let row = 0; row < 16; row++) {
-      for (let col = 0; col < 20; col++) {
-        const cell = document.createElement("div");
-        cell.className = "cell";
-        cell.dataset.row = row;
-        cell.dataset.col = col;
-
-        const editable = document.createElement("div");
-        editable.className = "editable";
-        editable.contentEditable = true;
-        editable.addEventListener("input", saveState);
-
-        const img = document.createElement("img");
-        img.style.display = "none";
-
-        cell.appendChild(editable);
-        cell.appendChild(img);
-        grid.appendChild(cell);
-      }
-    }
-  }
-
-  window.addEventListener("DOMContentLoaded", () => {
-    grid = document.getElementById("grid");
-    let isDragging = false;
-    let dragStart = null;
-
-    grid.addEventListener("mousedown", (e) => {
-      if (!e.target.closest(".cell")) return;
-      const cell = e.target.closest(".cell");
-      const row = parseInt(cell.dataset.row);
-      const col = parseInt(cell.dataset.col);
-      if (e.shiftKey) {
-        isDragging = true;
-        dragStart = { row, col };
-      } else {
-        selectedCells.clear();
-        document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-        const key = `${row},${col}`;
-        selectedCells.add(key);
-        cell.classList.add("selected");
-      }
-    });
-
-    grid.addEventListener("mousemove", (e) => {
-      if (!isDragging || !e.shiftKey || !e.target.closest(".cell")) return;
-      const cell = e.target.closest(".cell");
-      const endRow = parseInt(cell.dataset.row);
-      const endCol = parseInt(cell.dataset.col);
-      const minRow = Math.min(dragStart.row, endRow);
-      const maxRow = Math.max(dragStart.row, endRow);
-      const minCol = Math.min(dragStart.col, endCol);
-      const maxCol = Math.max(dragStart.col, endCol);
-      selectedCells.clear();
-      document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-      for (let r = minRow; r <= maxRow; r++) {
-        for (let c = minCol; c <= maxCol; c++) {
-          const key = `${r},${c}`;
-          selectedCells.add(key);
-          const targetCell = getCell(r, c);
-          if (targetCell) targetCell.classList.add("selected");
-        }
-      }
-    });
-
-    window.addEventListener("mouseup", () => {
-      isDragging = false;
-    });
-    grid = document.getElementById("grid");
-    createGrid();
-    restoreState();
-    const savedTitle = localStorage.getItem("pageTitle");
-    if (savedTitle) document.getElementById("pageTitle").value = savedTitle;
-    document.getElementById("pageTitle").addEventListener("input", saveState);
-
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const today = new Date();
-    const dateDisplay = document.getElementById("dateDisplay");
-    if (dateDisplay) {
-      dateDisplay.textContent = `${getTodayKey()} (${days[today.getDay()]})`;
-    }
-
-    // ✅ ボタンイベント処理をここに統合
-    document.querySelectorAll(".color-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const color = btn.dataset.color;
-        selectedCells.forEach(key => {
-          const [r, c] = key.split(',').map(Number);
-          const cell = getCell(r, c);
-          if (cell) cell.style.backgroundColor = color;
+      // フォントサイズ変更ボタン
+      document.querySelectorAll(".size-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const size = btn.dataset.size;
+          selectedCells.forEach(key => {
+            const [r, c] = key.split(',').map(Number);
+            const editable = getCell(r, c)?.querySelector(".editable");
+            if (editable) editable.style.fontSize = size;
+          });
+          saveState();
         });
-        saveState();
       });
-    });
 
-    document.querySelectorAll(".size-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const size = btn.dataset.size;
+      // 整列
+      document.getElementById("alignCenterBtn").addEventListener("click", () => {
         selectedCells.forEach(key => {
           const [r, c] = key.split(',').map(Number);
           const editable = getCell(r, c)?.querySelector(".editable");
-          if (editable) editable.style.fontSize = size;
+          if (editable) {
+            editable.style.alignItems = "center";
+            editable.style.justifyContent = "center";
+            editable.style.textAlign = "center";
+          }
         });
         saveState();
       });
-    });
 
-    document.getElementById("alignCenterBtn").addEventListener("click", () => {
-      selectedCells.forEach(key => {
-        const [r, c] = key.split(',').map(Number);
-        const editable = getCell(r, c)?.querySelector(".editable");
-        if (editable) {
-          editable.style.alignItems = "center";
-          editable.style.justifyContent = "center";
-          editable.style.textAlign = "center";
+      document.getElementById("alignTopLeftBtn").addEventListener("click", () => {
+        selectedCells.forEach(key => {
+          const [r, c] = key.split(',').map(Number);
+          const editable = getCell(r, c)?.querySelector(".editable");
+          if (editable) {
+            editable.style.alignItems = "flex-start";
+            editable.style.justifyContent = "flex-start";
+            editable.style.textAlign = "left";
+          }
+        });
+        saveState();
+      });
+
+      // ✅ check
+      document.getElementById("insertCheckboxBtn").addEventListener("click", () => {
+        selectedCells.forEach(key => {
+          const [r, c] = key.split(',').map(Number);
+          const editable = getCell(r, c)?.querySelector(".editable");
+          if (!editable) return;
+          const wrapper = document.createElement("span");
+          wrapper.style.display = "inline-flex";
+          wrapper.style.alignItems = "center";
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.style.marginRight = "4px";
+          const span = document.createElement("span");
+          span.textContent = "項目";
+          span.contentEditable = true;
+          span.style.outline = "none";
+          cb.addEventListener("change", () => {
+            span.style.textDecoration = cb.checked ? "line-through" : "none";
+            saveState();
+          });
+          wrapper.append(cb, span);
+          editable.appendChild(wrapper);
+        });
+        saveState();
+      });
+
+      // ☑️ check
+      document.getElementById("insertBoldCheckboxBtn").addEventListener("click", () => {
+        selectedCells.forEach(key => {
+          const [r, c] = key.split(',').map(Number);
+          const editable = getCell(r, c)?.querySelector(".editable");
+          if (!editable) return;
+          const wrapper = document.createElement("span");
+          wrapper.style.display = "inline-flex";
+          wrapper.style.alignItems = "center";
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.style.marginRight = "4px";
+          const span = document.createElement("span");
+          span.textContent = "項目";
+          span.contentEditable = true;
+          span.style.outline = "none";
+          span.style.fontWeight = "bold";
+          cb.addEventListener("change", () => {
+            span.style.textDecoration = cb.checked ? "line-through" : "none";
+            saveState();
+          });
+          wrapper.append(cb, span);
+          editable.appendChild(wrapper);
+        });
+        saveState();
+      });
+
+      // 画像アップロード
+      document.getElementById("uploadImageBtn").addEventListener("click", () => {
+        if (selectedCells.size !== 1) {
+          alert("画像は1つのセルにだけ添付できます。1セルのみ選択してください。");
+          return;
+        }
+        document.getElementById("imageInput").click();
+      });
+
+      document.getElementById("imageInput").addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const [r, c] = [...selectedCells][0].split(',').map(Number);
+          const cell = getCell(r, c);
+          const img = cell.querySelector("img");
+          img.src = e.target.result;
+          img.style.display = "block";
+          saveState();
+        };
+        reader.readAsDataURL(file);
+        event.target.value = "";
+      });
+
+      // Undo / Redo
+      document.getElementById("undoBtn").addEventListener("click", () => {
+        if (historyIndex > 0) {
+          historyIndex--;
+          const state = JSON.parse(history[historyIndex]);
+          localStorage.setItem(`brainhack-${getTodayKey()}`, JSON.stringify(state));
+          restoreState();
         }
       });
-      saveState();
-    });
 
-    document.getElementById("alignTopLeftBtn").addEventListener("click", () => {
-      selectedCells.forEach(key => {
-        const [r, c] = key.split(',').map(Number);
-        const editable = getCell(r, c)?.querySelector(".editable");
-        if (editable) {
-          editable.style.alignItems = "flex-start";
-          editable.style.justifyContent = "center";
-          editable.style.textAlign = "left";
+      document.getElementById("redoBtn").addEventListener("click", () => {
+        if (historyIndex < history.length - 1) {
+          historyIndex++;
+          const state = JSON.parse(history[historyIndex]);
+          localStorage.setItem(`brainhack-${getTodayKey()}`, JSON.stringify(state));
+          restoreState();
         }
       });
-      saveState();
-    });
 
-    document.getElementById("insertCheckboxBtn").addEventListener("click", () => {
-      selectedCells.forEach(key => {
-        const [r, c] = key.split(',').map(Number);
-        const editable = getCell(r, c)?.querySelector(".editable");
-        if (!editable) return;
-        const wrapper = document.createElement("span");
-        wrapper.style.display = "inline-flex";
-        wrapper.style.alignItems = "center";
-        const cb = document.createElement("input");
-        cb.type = "checkbox";
-        cb.style.marginRight = "4px";
-        const span = document.createElement("span");
-        span.textContent = "項目";
-        span.contentEditable = true;
-        span.style.outline = "none";
-        cb.addEventListener("change", () => {
-          span.style.textDecoration = cb.checked ? "line-through" : "none";
-          saveState();
+      // 削除
+      document.getElementById("deleteBtn").addEventListener("click", () => {
+        selectedCells.forEach(key => {
+          const [r, c] = key.split(',').map(Number);
+          const cell = getCell(r, c);
+          const editable = cell.querySelector(".editable");
+          const img = cell.querySelector("img");
+          editable.innerHTML = "";
+          img.src = "";
+          img.style.display = "none";
         });
-        wrapper.append(cb, span);
-        editable.appendChild(wrapper);
+        saveState();
       });
-      saveState();
-    });
 
-    document.getElementById("insertBoldCheckboxBtn").addEventListener("click", () => {
-      selectedCells.forEach(key => {
-        const [r, c] = key.split(',').map(Number);
-        const editable = getCell(r, c)?.querySelector(".editable");
-        if (!editable) return;
-        const wrapper = document.createElement("span");
-        wrapper.style.display = "inline-flex";
-        wrapper.style.alignItems = "center";
-        const cb = document.createElement("input");
-        cb.type = "checkbox";
-        cb.style.marginRight = "4px";
-        const span = document.createElement("span");
-        span.textContent = "項目";
-        span.contentEditable = true;
-        span.style.outline = "none";
-        span.style.fontWeight = "bold";
-        cb.addEventListener("change", () => {
-          span.style.textDecoration = cb.checked ? "line-through" : "none";
-          saveState();
+      // リセット
+      document.getElementById("resetBtn").addEventListener("click", () => {
+        localStorage.clear();
+        location.reload();
+      });
+
+      // 結合
+      document.getElementById("mergeBtn").addEventListener("click", () => {
+        if (selectedCells.size < 2) return alert("2つ以上のセルを選択してください。");
+        const coords = [...selectedCells].map(k => k.split(',').map(Number));
+        const rows = coords.map(c => c[0]);
+        const cols = coords.map(c => c[1]);
+        const minRow = Math.min(...rows), maxRow = Math.max(...rows);
+        const minCol = Math.min(...cols), maxCol = Math.max(...cols);
+        const area = (maxRow - minRow + 1) * (maxCol - minCol + 1);
+        if (area !== selectedCells.size) return alert("隣接する長方形で選択してください。");
+
+        const base = getCell(minRow, minCol);
+        base.style.gridRow = `${minRow + 1} / span ${maxRow - minRow + 1}`;
+        base.style.gridColumn = `${minCol + 1} / span ${maxCol - minCol + 1}`;
+        base.style.display = "flex";
+
+        coords.forEach(([r, c]) => {
+          const cell = getCell(r, c);
+          if (r === minRow && c === minCol) return;
+          cell.style.display = "none";
         });
-        wrapper.append(cb, span);
-        editable.appendChild(wrapper);
+
+        selectedCells.clear();
+        document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+        saveState();
       });
-      saveState();
-    });
 
-    document.getElementById("uploadImageBtn").addEventListener("click", () => {
-      if (selectedCells.size !== 1) {
-        alert("画像は1つのセルにだけ添付できます。1セルのみ選択してください。");
-        return;
-      }
-      document.getElementById("imageInput").click();
-    });
-
-    document.getElementById("imageInput").addEventListener("change", (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
+      // 分離
+      document.getElementById("splitBtn").addEventListener("click", () => {
+        if (selectedCells.size !== 1) return alert("1つの結合セルを選択してください。");
         const [r, c] = [...selectedCells][0].split(',').map(Number);
-        const cell = getCell(r, c);
-        const img = cell.querySelector("img");
-        img.src = e.target.result;
-        img.style.display = "block";
-        saveState();
-      };
-      reader.readAsDataURL(file);
-      event.target.value = "";
-    });
+        const base = getCell(r, c);
+        const rowStart = base.style.gridRow.includes("/") ? parseInt(base.style.gridRow.split("/")[0]) - 1 : r;
+        const rowSpan = base.style.gridRow.includes("span") ? parseInt(base.style.gridRow.split("span ")[1]) : 1;
+        const colStart = base.style.gridColumn.includes("/") ? parseInt(base.style.gridColumn.split("/")[0]) - 1 : c;
+        const colSpan = base.style.gridColumn.includes("span") ? parseInt(base.style.gridColumn.split("span ")[1]) : 1;
 
-    document.getElementById("undoBtn").addEventListener("click", () => {
-      if (historyIndex > 0) {
-        historyIndex--;
-        const state = JSON.parse(history[historyIndex]);
-        localStorage.setItem(`brainhack-${getTodayKey()}`, JSON.stringify(state));
-        restoreState();
-      }
-    });
+        base.style.gridRow = "";
+        base.style.gridColumn = "";
 
-    document.getElementById("redoBtn").addEventListener("click", () => {
-      if (historyIndex < history.length - 1) {
-        historyIndex++;
-        const state = JSON.parse(history[historyIndex]);
-        localStorage.setItem(`brainhack-${getTodayKey()}`, JSON.stringify(state));
-        restoreState();
-      }
-    });
-
-    document.getElementById("deleteBtn").addEventListener("click", () => {
-      selectedCells.forEach(key => {
-        const [r, c] = key.split(',').map(Number);
-        const cell = getCell(r, c);
-        const editable = cell.querySelector(".editable");
-        const img = cell.querySelector("img");
-        editable.innerHTML = "";
-        img.src = "";
-        img.style.display = "none";
-      });
-      saveState();
-    });
-
-    document.getElementById("resetBtn").addEventListener("click", () => {
-      localStorage.clear();
-      location.reload();
-    });
-
-    document.getElementById("mergeBtn").addEventListener("click", () => {
-      if (selectedCells.size < 2) return alert("2つ以上のセルを選択してください。");
-      const coords = [...selectedCells].map(k => k.split(',').map(Number));
-      const rows = coords.map(c => c[0]);
-      const cols = coords.map(c => c[1]);
-      const minRow = Math.min(...rows), maxRow = Math.max(...rows);
-      const minCol = Math.min(...cols), maxCol = Math.max(...cols);
-      const area = (maxRow - minRow + 1) * (maxCol - minCol + 1);
-      if (area !== selectedCells.size) return alert("隣接する長方形で選択してください。");
-
-      const base = getCell(minRow, minCol);
-      base.style.gridRow = `${minRow + 1} / span ${maxRow - minRow + 1}`;
-      base.style.gridColumn = `${minCol + 1} / span ${maxCol - minCol + 1}`;
-      base.style.display = "flex";
-
-      coords.forEach(([r, c]) => {
-        const cell = getCell(r, c);
-        if (r === minRow && c === minCol) return;
-        cell.style.display = "none";
-      });
-
-      selectedCells.clear();
-      document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-      saveState();
-    });
-
-    document.getElementById("splitBtn").addEventListener("click", () => {
-      if (selectedCells.size !== 1) return alert("1つの結合セルを選択してください。");
-      const [r, c] = [...selectedCells][0].split(',').map(Number);
-      const base = getCell(r, c);
-      const gridRow = base.style.gridRow;
-      const gridColumn = base.style.gridColumn;
-      const rowStart = gridRow.includes("/") ? parseInt(gridRow.split("/")[0]) - 1 : r;
-      const rowSpan = gridRow.includes("span") ? parseInt(gridRow.split("span ")[1]) : 1;
-      const colStart = gridColumn.includes("/") ? parseInt(gridColumn.split("/")[0]) - 1 : c;
-      const colSpan = gridColumn.includes("span") ? parseInt(gridColumn.split("span ")[1]) : 1;
-
-      base.style.gridRow = "";
-      base.style.gridColumn = "";
-
-      for (let i = rowStart; i < rowStart + rowSpan; i++) {
-        for (let j = colStart; j < colStart + colSpan; j++) {
-          const cell = getCell(i, j);
-          cell.style.display = "flex";
+        for (let i = rowStart; i < rowStart + rowSpan; i++) {
+          for (let j = colStart; j < colStart + colSpan; j++) {
+            const cell = getCell(i, j);
+            cell.style.display = "flex";
+          }
         }
-      }
 
-      selectedCells.clear();
-      document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-      saveState();
+        selectedCells.clear();
+        document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
+        saveState();
+      });
     });
-  });
-</script>
+  </script>
 </body>
 </html>
