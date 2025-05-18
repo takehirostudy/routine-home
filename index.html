@@ -542,6 +542,7 @@ document.getElementById("resetBtn").addEventListener("click", () => {
     keys.forEach(k => {
       if (k.startsWith("brainhack-")) localStorage.removeItem(k);
     });
+    localStorage.removeItem(`brainhack-${getTodayKey()}`);
     localStorage.removeItem("pageTitle");
     location.reload();
   }
