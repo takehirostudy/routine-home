@@ -1,4 +1,4 @@
-// task.js 完全版（全機能統合）
+// task.js 完全動作版
 
 const grid = document.getElementById("grid");
 const titleInput = document.getElementById("pageTitle");
@@ -12,14 +12,18 @@ function createGrid() {
       cell.className = "cell";
       cell.dataset.row = row;
       cell.dataset.col = col;
+
       const editable = document.createElement("div");
       editable.className = "editable";
       editable.contentEditable = true;
       editable.addEventListener("input", saveState);
+
       const img = document.createElement("img");
       img.style.display = "none";
+
       cell.appendChild(editable);
       cell.appendChild(img);
+
       grid.appendChild(cell);
     }
   }
@@ -66,16 +70,16 @@ function restoreState() {
   const state = JSON.parse(saved);
   state.forEach(data => {
     const cell = getCell(data.row, data.col);
+    if (!cell) return;
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
     editable.innerHTML = data.html || '';
-    cell.style.display = data.display || 'flex';
     editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
       cb.checked = cb.checked || cb.hasAttribute('checked');
       const span = cb.nextElementSibling;
-      span && (span.style.textDecoration = cb.checked ? "line-through" : "none");
+      if (span) span.style.textDecoration = cb.checked ? "line-through" : "none";
       cb.addEventListener("change", () => {
-        span && (span.style.textDecoration = cb.checked ? "line-through" : "none");
+        if (span) span.style.textDecoration = cb.checked ? "line-through" : "none";
         saveState();
       });
     });
@@ -95,17 +99,28 @@ function restoreState() {
 }
 
 window.onload = () => {
+  // 日付表示とアーカイブ処理
+  const dateDisplay = document.getElementById("dateDisplay");
+  const today = new Date();
+  const yyyyMMdd = today.toISOString().slice(0, 10);
+  const weekday = new Intl.DateTimeFormat('ja-JP', { weekday: 'long' }).format(today);
+  if (dateDisplay) dateDisplay.textContent = `${yyyyMMdd} (${weekday})`;
+
+  const lastDate = localStorage.getItem("lastAccessDate");
+  if (lastDate && lastDate !== yyyyMMdd) {
+    const oldData = localStorage.getItem("gridState");
+    const oldTitle = localStorage.getItem("pageTitle");
+    if (oldData || oldTitle) {
+      localStorage.setItem(`task_${lastDate}_grid`, oldData);
+      localStorage.setItem(`task_${lastDate}_title`, oldTitle);
+    }
+    localStorage.removeItem("gridState");
+    localStorage.removeItem("pageTitle");
+  }
+  localStorage.setItem("lastAccessDate", yyyyMMdd);
   createGrid();
-  restoreState();
-  document.querySelectorAll(".cell").forEach(cell => {
-    if (cell.style.gridRow || cell.style.gridColumn) return;
-    if (cell.style.display === 'none') cell.style.display = 'flex';
-  });
-  titleInput.addEventListener("input", saveState);
 
-  const getSelectedCells = () => [...selectedCells].map(k => k.split(',').map(Number));
-
-  // 選択機能
+  // セル選択（Shift+ドラッグ対応）
   let isDragging = false, dragStart = null;
   grid.addEventListener("mousedown", e => {
     const cell = e.target.closest(".cell");
@@ -122,7 +137,6 @@ window.onload = () => {
       cell.classList.add("selected");
     }
   });
-
   grid.addEventListener("mousemove", e => {
     if (!isDragging || !e.shiftKey) return;
     const cell = e.target.closest(".cell");
@@ -141,8 +155,11 @@ window.onload = () => {
       }
     }
   });
-
   window.addEventListener("mouseup", () => isDragging = false);
+  restoreState();
+
+  // ボタン操作
+  const getSelectedCells = () => [...selectedCells].map(k => k.split(',').map(Number));
 
   // 色変更
   document.querySelectorAll(".color-btn").forEach(btn => {
@@ -161,7 +178,7 @@ window.onload = () => {
     });
   });
 
-  // 整列
+  // 中央寄せ
   document.getElementById("alignCenterBtn").addEventListener("click", () => {
     getSelectedCells().forEach(([r, c]) => {
       const el = getCell(r, c).querySelector(".editable");
@@ -172,6 +189,7 @@ window.onload = () => {
     saveState();
   });
 
+  // 左寄せ
   document.getElementById("alignTopLeftBtn").addEventListener("click", () => {
     getSelectedCells().forEach(([r, c]) => {
       const el = getCell(r, c).querySelector(".editable");
@@ -182,8 +200,8 @@ window.onload = () => {
     saveState();
   });
 
-  // チェックボックス
-  const insertCheckbox = (bold = false) => {
+  // チェックボックス挿入
+  function insertCheckbox(bold = false) {
     getSelectedCells().forEach(([r, c]) => {
       const editable = getCell(r, c).querySelector(".editable");
       const wrapper = document.createElement("span");
@@ -205,10 +223,65 @@ window.onload = () => {
       editable.appendChild(wrapper);
     });
     saveState();
-  };
-
+  }
   document.getElementById("insertCheckboxBtn").addEventListener("click", () => insertCheckbox(false));
   document.getElementById("insertBoldCheckboxBtn").addEventListener("click", () => insertCheckbox(true));
+
+  // 画像アップロード
+  document.getElementById("uploadImageBtn").addEventListener("click", () => {
+    if (selectedCells.size !== 1) return alert("画像は1つのセルにのみ添付してください");
+    document.getElementById("imageInput").click();
+  });
+  document.getElementById("imageInput").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const [r, c] = [...selectedCells][0].split(',').map(Number);
+      const img = getCell(r, c).querySelector("img");
+      img.src = event.target.result;
+      img.style.display = "block";
+      saveState();
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  });
+
+  // 削除
+  document.getElementById("deleteBtn").addEventListener("click", () => {
+    getSelectedCells().forEach(([r, c]) => {
+      const cell = getCell(r, c);
+      const editable = cell.querySelector(".editable");
+      editable.innerHTML = "";
+      editable.querySelectorAll("span").forEach(s => s.remove());
+      const img = cell.querySelector("img");
+      img.src = "";
+      img.style.display = "none";
+    });
+    saveState();
+  });
+
+  // リセット
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    localStorage.clear();
+    location.reload();
+  });
+
+  // Undo / Redo
+  document.getElementById("undoBtn").addEventListener("click", () => {
+    if (historyIndex > 0) {
+      historyIndex--;
+      localStorage.setItem("gridState", history[historyIndex]);
+      restoreState();
+    }
+  });
+  document.getElementById("redoBtn").addEventListener("click", () => {
+    if (historyIndex < history.length - 1) {
+      historyIndex++;
+      localStorage.setItem("gridState", history[historyIndex]);
+      restoreState();
+    }
+  });
 
   // セル結合
   document.getElementById("mergeBtn").addEventListener("click", () => {
@@ -250,42 +323,5 @@ window.onload = () => {
     saveState();
   });
 
-  // 削除
-  document.getElementById("deleteBtn").addEventListener("click", () => {
-    getSelectedCells().forEach(([r, c]) => {
-      const cell = getCell(r, c);
-      const editable = cell.querySelector(".editable");
-      editable.innerHTML = "";
-      // 削除処理にチェックボックスのwrapperも対象
-      editable.querySelectorAll("span").forEach(span => {
-        if (span.querySelector("input[type='checkbox']")) span.remove();
-      });
-      const img = cell.querySelector("img");
-      img.src = "";
-      img.style.display = "none";
-    });
-    saveState();
-  });
-
-  // リセット
-  document.getElementById("resetBtn").addEventListener("click", () => {
-    localStorage.clear();
-    location.reload();
-  });
-
-  // Undo / Redo
-  document.getElementById("undoBtn").addEventListener("click", () => {
-    if (historyIndex > 0) {
-      historyIndex--;
-      localStorage.setItem("gridState", history[historyIndex]);
-      restoreState();
-    }
-  });
-  document.getElementById("redoBtn").addEventListener("click", () => {
-    if (historyIndex < history.length - 1) {
-      historyIndex++;
-      localStorage.setItem("gridState", history[historyIndex]);
-      restoreState();
-    }
-  });
+  titleInput.addEventListener("input", saveState);
 };
