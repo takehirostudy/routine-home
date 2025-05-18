@@ -1,327 +1,120 @@
-// task.js 完全動作版
-
-const grid = document.getElementById("grid");
-const titleInput = document.getElementById("pageTitle");
-const selectedCells = new Set();
-let history = [], historyIndex = -1;
-
-function createGrid() {
-  for (let row = 0; row < 16; row++) {
-    for (let col = 0; col < 20; col++) {
-      const cell = document.createElement("div");
-      cell.className = "cell";
-      cell.dataset.row = row;
-      cell.dataset.col = col;
-
-      const editable = document.createElement("div");
-      editable.className = "editable";
-      editable.contentEditable = true;
-      editable.addEventListener("input", saveState);
-
-      const img = document.createElement("img");
-      img.style.display = "none";
-
-      cell.appendChild(editable);
-      cell.appendChild(img);
-
-      grid.appendChild(cell);
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brain Hacker</title>
+  <style>
+    body { margin: 0; padding: 10px; font-family: sans-serif; }
+    .controls { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(20, 1fr);
+      grid-template-rows: repeat(16, 1fr);
+      width: 100vw;
+      height: 80vh;
+      gap: 1px;
+      border: 1px solid #ccc;
     }
-  }
-}
-
-function getCell(row, col) {
-  return [...grid.children].find(c => c.dataset.row == row && c.dataset.col == col);
-}
-
-function saveState() {
-  const state = [...grid.children].map(cell => {
-    const editable = cell.querySelector(".editable");
-    const img = cell.querySelector("img");
-    editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
-      cb.checked ? cb.setAttribute("checked", "checked") : cb.removeAttribute("checked");
-    });
-    return {
-      row: cell.dataset.row,
-      col: cell.dataset.col,
-      html: editable.innerHTML,
-      fontSize: editable.style.fontSize,
-      bgColor: cell.style.backgroundColor,
-      display: cell.style.display,
-      gridRow: cell.style.gridRow,
-      gridColumn: cell.style.gridColumn,
-      imgSrc: img?.src || '',
-      alignItems: editable.style.alignItems,
-      justifyContent: editable.style.justifyContent,
-      textAlign: editable.style.textAlign
-    };
-  });
-  localStorage.setItem("gridState", JSON.stringify(state));
-  localStorage.setItem("pageTitle", titleInput.value);
-  history = history.slice(0, historyIndex + 1);
-  history.push(JSON.stringify(state));
-  historyIndex++;
-}
-
-function restoreState() {
-  const saved = localStorage.getItem("gridState");
-  const savedTitle = localStorage.getItem("pageTitle");
-  if (savedTitle) titleInput.value = savedTitle;
-  if (!saved) return;
-  const state = JSON.parse(saved);
-  state.forEach(data => {
-    const cell = getCell(data.row, data.col);
-    if (!cell) return;
-    const editable = cell.querySelector(".editable");
-    const img = cell.querySelector("img");
-    editable.innerHTML = data.html || '';
-    editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
-      cb.checked = cb.checked || cb.hasAttribute('checked');
-      const span = cb.nextElementSibling;
-      if (span) span.style.textDecoration = cb.checked ? "line-through" : "none";
-      cb.addEventListener("change", () => {
-        if (span) span.style.textDecoration = cb.checked ? "line-through" : "none";
-        saveState();
-      });
-    });
-    editable.style.fontSize = data.fontSize || '';
-    editable.style.alignItems = data.alignItems || 'flex-start';
-    editable.style.justifyContent = data.justifyContent || 'flex-start';
-    editable.style.textAlign = data.textAlign || 'left';
-    cell.style.backgroundColor = data.bgColor || '';
-    cell.style.display = data.display || 'flex';
-    cell.style.gridRow = data.gridRow || '';
-    cell.style.gridColumn = data.gridColumn || '';
-    if (data.imgSrc) {
-      img.src = data.imgSrc;
-      img.style.display = 'block';
+    .cell {
+      border: 1px solid #aaa;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 1px;
+      font-size: 1vw;
     }
-  });
-}
-
-window.onload = () => {
-  // 日付表示とアーカイブ処理
-  const dateDisplay = document.getElementById("dateDisplay");
-  const today = new Date();
-  const yyyyMMdd = today.toISOString().slice(0, 10);
-  const weekday = new Intl.DateTimeFormat('ja-JP', { weekday: 'long' }).format(today);
-  if (dateDisplay) dateDisplay.textContent = `${yyyyMMdd} (${weekday})`;
-
-  const lastDate = localStorage.getItem("lastAccessDate");
-  if (lastDate && lastDate !== yyyyMMdd) {
-    const oldData = localStorage.getItem("gridState");
-    const oldTitle = localStorage.getItem("pageTitle");
-    if (oldData || oldTitle) {
-      localStorage.setItem(`task_${lastDate}_grid`, oldData);
-      localStorage.setItem(`task_${lastDate}_title`, oldTitle);
+    .cell.selected { outline: 2px solid #4285f4; }
+    .editable {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      flex-direction: column;
+      font-size: 1vw;
+      text-align: left;
+      padding: 2px;
+      border: none;
+      outline: none;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
-    localStorage.removeItem("gridState");
-    localStorage.removeItem("pageTitle");
-  }
-  localStorage.setItem("lastAccessDate", yyyyMMdd);
-  createGrid();
-
-  // セル選択（Shift+ドラッグ対応）
-  let isDragging = false, dragStart = null;
-  grid.addEventListener("mousedown", e => {
-    const cell = e.target.closest(".cell");
-    if (!cell) return;
-    const row = parseInt(cell.dataset.row), col = parseInt(cell.dataset.col);
-    if (e.shiftKey) {
-      isDragging = true;
-      dragStart = { row, col };
-    } else {
-      selectedCells.clear();
-      document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-      const key = `${row},${col}`;
-      selectedCells.add(key);
-      cell.classList.add("selected");
+    .cell img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
     }
-  });
-  grid.addEventListener("mousemove", e => {
-    if (!isDragging || !e.shiftKey) return;
-    const cell = e.target.closest(".cell");
-    if (!cell) return;
-    const endRow = parseInt(cell.dataset.row);
-    const endCol = parseInt(cell.dataset.col);
-    const minRow = Math.min(dragStart.row, endRow), maxRow = Math.max(dragStart.row, endRow);
-    const minCol = Math.min(dragStart.col, endCol), maxCol = Math.max(dragStart.col, endCol);
-    selectedCells.clear();
-    document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-    for (let r = minRow; r <= maxRow; r++) {
-      for (let c = minCol; c <= maxCol; c++) {
-        const key = `${r},${c}`;
-        selectedCells.add(key);
-        getCell(r, c).classList.add("selected");
-      }
+    button {
+      padding: 4px 6px;
+      font-size: 12px;
+      cursor: pointer;
     }
-  });
-  window.addEventListener("mouseup", () => isDragging = false);
-  restoreState();
-
-  // ボタン操作
-  const getSelectedCells = () => [...selectedCells].map(k => k.split(',').map(Number));
-
-  // 色変更
-  document.querySelectorAll(".color-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const color = btn.dataset.color;
-      getSelectedCells().forEach(([r, c]) => getCell(r, c).style.backgroundColor = color);
-      saveState();
-    });
-  });
-
-  // フォントサイズ変更
-  document.querySelectorAll(".size-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      getSelectedCells().forEach(([r, c]) => getCell(r, c).querySelector(".editable").style.fontSize = btn.dataset.size);
-      saveState();
-    });
-  });
-
-  // 中央寄せ
-  document.getElementById("alignCenterBtn").addEventListener("click", () => {
-    getSelectedCells().forEach(([r, c]) => {
-      const el = getCell(r, c).querySelector(".editable");
-      el.style.alignItems = "center";
-      el.style.justifyContent = "center";
-      el.style.textAlign = "center";
-    });
-    saveState();
-  });
-
-  // 左寄せ
-  document.getElementById("alignTopLeftBtn").addEventListener("click", () => {
-    getSelectedCells().forEach(([r, c]) => {
-      const el = getCell(r, c).querySelector(".editable");
-      el.style.alignItems = "flex-start";
-      el.style.justifyContent = "center";
-      el.style.textAlign = "left";
-    });
-    saveState();
-  });
-
-  // チェックボックス挿入
-  function insertCheckbox(bold = false) {
-    getSelectedCells().forEach(([r, c]) => {
-      const editable = getCell(r, c).querySelector(".editable");
-      const wrapper = document.createElement("span");
-      wrapper.style.display = "inline-flex";
-      wrapper.style.alignItems = "center";
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.style.marginRight = "4px";
-      const span = document.createElement("span");
-      span.textContent = "項目";
-      span.contentEditable = true;
-      span.style.outline = "none";
-      if (bold) span.style.fontWeight = "bold";
-      cb.addEventListener("change", () => {
-        span.style.textDecoration = cb.checked ? "line-through" : "none";
-        saveState();
-      });
-      wrapper.append(cb, span);
-      editable.appendChild(wrapper);
-    });
-    saveState();
-  }
-  document.getElementById("insertCheckboxBtn").addEventListener("click", () => insertCheckbox(false));
-  document.getElementById("insertBoldCheckboxBtn").addEventListener("click", () => insertCheckbox(true));
-
-  // 画像アップロード
-  document.getElementById("uploadImageBtn").addEventListener("click", () => {
-    if (selectedCells.size !== 1) return alert("画像は1つのセルにのみ添付してください");
-    document.getElementById("imageInput").click();
-  });
-  document.getElementById("imageInput").addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const [r, c] = [...selectedCells][0].split(',').map(Number);
-      const img = getCell(r, c).querySelector("img");
-      img.src = event.target.result;
-      img.style.display = "block";
-      saveState();
-    };
-    reader.readAsDataURL(file);
-    e.target.value = "";
-  });
-
-  // 削除
-  document.getElementById("deleteBtn").addEventListener("click", () => {
-    getSelectedCells().forEach(([r, c]) => {
-      const cell = getCell(r, c);
-      const editable = cell.querySelector(".editable");
-      editable.innerHTML = "";
-      editable.querySelectorAll("span").forEach(s => s.remove());
-      const img = cell.querySelector("img");
-      img.src = "";
-      img.style.display = "none";
-    });
-    saveState();
-  });
-
-  // リセット
-  document.getElementById("resetBtn").addEventListener("click", () => {
-    localStorage.clear();
-    location.reload();
-  });
-
-  // Undo / Redo
-  document.getElementById("undoBtn").addEventListener("click", () => {
-    if (historyIndex > 0) {
-      historyIndex--;
-      localStorage.setItem("gridState", history[historyIndex]);
-      restoreState();
+    .size-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 4px;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-  });
-  document.getElementById("redoBtn").addEventListener("click", () => {
-    if (historyIndex < history.length - 1) {
-      historyIndex++;
-      localStorage.setItem("gridState", history[historyIndex]);
-      restoreState();
+    .title-input {
+      font-size: 2em;
+      width: 100%;
+      border: none;
+      color: black;
+      outline: none;
+      text-align: center;
     }
-  });
-
-  // セル結合
-  document.getElementById("mergeBtn").addEventListener("click", () => {
-    const coords = getSelectedCells();
-    if (coords.length < 2) return alert("2つ以上のセルを選択してください。");
-    const rows = coords.map(c => c[0]), cols = coords.map(c => c[1]);
-    const minR = Math.min(...rows), maxR = Math.max(...rows);
-    const minC = Math.min(...cols), maxC = Math.max(...cols);
-    if ((maxR - minR + 1) * (maxC - minC + 1) !== coords.length) return alert("長方形で選択してください。");
-    const base = getCell(minR, minC);
-    base.style.gridRow = `${minR + 1} / span ${maxR - minR + 1}`;
-    base.style.gridColumn = `${minC + 1} / span ${maxC - minC + 1}`;
-    coords.forEach(([r, c]) => {
-      if (r !== minR || c !== minC) getCell(r, c).style.display = "none";
-    });
-    selectedCells.clear();
-    document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-    saveState();
-  });
-
-  // セル分離
-  document.getElementById("splitBtn").addEventListener("click", () => {
-    if (selectedCells.size !== 1) return alert("1つの結合セルを選択してください。");
-    const [r, c] = [...selectedCells][0].split(',').map(Number);
-    const base = getCell(r, c);
-    const rowStart = parseInt(base.style.gridRow?.split("/")[0]) - 1 || r;
-    const rowSpan = parseInt(base.style.gridRow?.split("span ")[1]) || 1;
-    const colStart = parseInt(base.style.gridColumn?.split("/")[0]) - 1 || c;
-    const colSpan = parseInt(base.style.gridColumn?.split("span ")[1]) || 1;
-    base.style.gridRow = "";
-    base.style.gridColumn = "";
-    for (let i = rowStart; i < rowStart + rowSpan; i++) {
-      for (let j = colStart; j < colStart + colSpan; j++) {
-        getCell(i, j).style.display = "flex";
-      }
+    .title-input::placeholder {
+      color: #bbb;
     }
-    selectedCells.clear();
-    document.querySelectorAll(".cell").forEach(c => c.classList.remove("selected"));
-    saveState();
-  });
+  </style>
+</head>
+<body>
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div id="dateDisplay" style="font-size: 1.2em; font-weight: bold; margin-bottom: 10px;"></div>
+    <a href="manage.html"><button>Brain Hacker</button></a>
+  </div>
 
-  titleInput.addEventListener("input", saveState);
-};
+  <input class="title-input" id="pageTitle" placeholder="Brain hacker" />
+
+  <div class="controls" id="controls">
+    <button class="color-btn" data-color="#ffa500" style="background-color:#ffa500"></button>
+    <button class="color-btn" data-color="#f2c1c1" style="background-color:#f2c1c1"></button>
+    <button class="color-btn" data-color="#ffef5b" style="background-color:#ffef5b"></button>
+    <button class="color-btn" data-color="#d0f0c0" style="background-color:#d0f0c0"></button>
+    <button class="color-btn" data-color="#a2dff7" style="background-color:#a2dff7"></button>
+    <button class="color-btn" data-color="#d8d8d8" style="background-color:#d8d8d8"></button>
+    <button class="color-btn" data-color="#ffffff" style="background-color:#ffffff"></button>
+    <button id="mergeBtn">integrate</button>
+    <button id="splitBtn">separate</button>
+    <button id="insertCheckboxBtn">✅ check</button>
+    <button id="insertBoldCheckboxBtn">☑️ check</button>
+    <button id="uploadImageBtn">🖼️</button>
+    <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+    <button class="size-btn" data-size="2.56vw" style="font-size:2.56vw;">A</button>
+    <button class="size-btn" data-size="1.92vw" style="font-size:1.92vw;">A</button>
+    <button class="size-btn" data-size="1.6vw" style="font-size:1.6vw;">A</button>
+    <button class="size-btn" data-size="1.28vw" style="font-size:1.28vw;">A</button>
+    <button class="size-btn" data-size="0.8vw" style="font-size:0.8vw;">A</button>
+    <button id="undoBtn">↩️</button>
+    <button id="redoBtn">↪️</button>
+    <button id="resetBtn">🔄</button>
+    <button id="deleteBtn">🗑️</button>
+    <button id="alignTopLeftBtn">left alignment</button>
+    <button id="alignCenterBtn">centered</button>
+  </div>
+
+  <div class="grid-container" id="grid"></div>
+
+  <!-- 正しく task.js を読み込み -->
+  <script src="task.js"></script>
+</body>
+</html>
