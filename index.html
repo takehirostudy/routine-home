@@ -186,28 +186,8 @@ function restoreState() {
     const cell = getCell(data.row, data.col);
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
-    editable.innerHTML = '';
-    // 既存のチェックボックス要素を除去
-    const existingCheckboxes = editable.querySelectorAll("input[type='checkbox']");
-    existingCheckboxes.forEach(cb => cb.closest("span")?.remove());
-    data.checkboxes?.forEach(({ checked, text, bold, textDecoration }) => {
-      const wrapper = document.createElement("span");
-      wrapper.style.display = "inline-flex";
-      wrapper.style.alignItems = "center";
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = checked;
-      cb.style.marginRight = "4px";
-      const span = document.createElement("span");
-      span.textContent = text;
-      span.contentEditable = true;
-      span.style.outline = "none";
-      if (bold) span.style.fontWeight = "bold";
-      if (textDecoration) span.style.textDecoration = textDecoration;
-      cb.addEventListener("change", () => {
-        span.style.textDecoration = cb.checked ? "line-through" : "none";
-        saveState();
-      });
+    editable.innerHTML = data.html || '';
+    
       wrapper.append(cb, span);
       editable.appendChild(wrapper);
     });
