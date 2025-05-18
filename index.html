@@ -480,5 +480,14 @@ window.onload = () => {
   window.addEventListener("mouseup", () => {
     isDragging = false;
   });
+<script>
+  // セル表示がされない不具合対策
+  if (!document.querySelector(".cell")) {
+    window.addEventListener("load", () => {
+      createGrid();
+      restoreState();
+    });
+  }
+</script>
 </body>
 </html>
