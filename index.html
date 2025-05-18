@@ -481,20 +481,6 @@ window.onload = () => {
     isDragging = false;
   });
 
-<script>
-  // セル表示と日付表示の確実な初期化
-  window.addEventListener("DOMContentLoaded", () => {
-    createGrid();
-    restoreState();
 
-    // 日付表示
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const today = new Date();
-    const dateDisplay = document.getElementById("dateDisplay");
-    if (dateDisplay) {
-      dateDisplay.textContent = `${getTodayKey()} (${days[today.getDay()]})`;
-    }
-  });
-</script>
 </body>
 </html>
