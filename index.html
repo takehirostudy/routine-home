@@ -261,7 +261,7 @@ function applyHistory(stateStr) {
     cell.style.display = data.display;
     cell.style.gridRow = data.gridRow;
     cell.style.gridColumn = data.gridColumn;
-    img.src = (data.imgSrc && data.imgSrc !== "undefined" && data.imgSrc !== "null") ? data.imgSrc : "";
+    img.src = (data.imgSrc && data.imgSrc !== "undefined" && data.imgSrc !== "null" && data.imgSrc !== "") ? data.imgSrc : "";
     img.style.display = img.src ? 'block' : 'none';
     editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
       cb.checked = cb.hasAttribute("checked");
@@ -338,7 +338,7 @@ function restoreState() {
     cell.style.display = data.display;
     cell.style.gridRow = data.gridRow;
     cell.style.gridColumn = data.gridColumn;
-    img.src = (data.imgSrc && data.imgSrc !== "undefined" && data.imgSrc !== "null") ? data.imgSrc : "";
+    img.src = (data.imgSrc && data.imgSrc !== "undefined" && data.imgSrc !== "null" && data.imgSrc !== "") ? data.imgSrc : "";
     img.style.display = img.src ? 'block' : 'none';
     editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
       cb.checked = cb.hasAttribute("checked");
@@ -513,4 +513,3 @@ document.getElementById("resetBtn").addEventListener("click", () => {
 </script>
 </body>
 </html>
-
