@@ -113,7 +113,7 @@
 </div>
   <div class="grid-container" id="grid"></div>
   <script>
-    const grid = document.getElementById("grid");
+    let grid;
 
     function getTodayKey() {
       const now = new Date();
@@ -163,6 +163,19 @@
         editable.style.alignItems = data.alignItems || 'flex-start';
         editable.style.justifyContent = data.justifyContent || 'flex-start';
         editable.style.textAlign = data.textAlign || 'left';
+
+        // ✅ チェックボックスの状態を復元
+        editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
+          cb.checked = cb.hasAttribute("checked");
+          const span = cb.nextElementSibling;
+          if (span) {
+            span.style.textDecoration = cb.checked ? "line-through" : "none";
+          }
+          cb.addEventListener("change", () => {
+            if (span) span.style.textDecoration = cb.checked ? "line-through" : "none";
+            saveState();
+          });
+        });
         cell.style.backgroundColor = data.bgColor || '';
         cell.style.display = data.display || 'flex';
         cell.style.gridRow = data.gridRow || '';
@@ -175,6 +188,7 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
+  grid = document.getElementById("grid");
       createGrid();
       restoreState();
       const savedTitle = localStorage.getItem("pageTitle");
