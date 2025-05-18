@@ -274,11 +274,14 @@
     restoreState();
     const savedTitle = localStorage.getItem("pageTitle");
     if (savedTitle) document.getElementById("pageTitle").value = savedTitle;
+    document.getElementById("pageTitle").addEventListener("input", saveState);
 
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const today = new Date();
     const dateDisplay = document.getElementById("dateDisplay");
-    dateDisplay.textContent = `${getTodayKey()} (${days[today.getDay()]})`;
+    if (dateDisplay) {
+      dateDisplay.textContent = `${getTodayKey()} (${days[today.getDay()]})`;
+    }
 
     // ✅ ボタンイベント処理をここに統合
     document.querySelectorAll(".color-btn").forEach(btn => {
