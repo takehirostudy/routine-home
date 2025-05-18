@@ -262,8 +262,13 @@ function applyHistory(stateStr) {
     cell.style.gridRow = data.gridRow;
     cell.style.gridColumn = data.gridColumn;
     if (data.imgSrc && /^data:image\//.test(data.imgSrc)) {
+      if (data.imgSrc && data.imgSrc.startsWith("data:image/")) {
       img.src = data.imgSrc;
       img.style.display = 'block';
+    } else {
+      img.src = "";
+      img.style.display = 'none';
+    }
     } else {
       img.src = "";
       img.style.display = 'none';
@@ -345,8 +350,13 @@ function restoreState() {
     cell.style.gridRow = data.gridRow;
     cell.style.gridColumn = data.gridColumn;
     if (data.imgSrc && /^data:image\//.test(data.imgSrc)) {
+      if (data.imgSrc && data.imgSrc.startsWith("data:image/")) {
       img.src = data.imgSrc;
       img.style.display = 'block';
+    } else {
+      img.src = "";
+      img.style.display = 'none';
+    }
     } else {
       img.src = "";
       img.style.display = 'none';
