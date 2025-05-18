@@ -187,10 +187,6 @@ function restoreState() {
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
     editable.innerHTML = data.html || '';
-    
-      wrapper.append(cb, span);
-      editable.appendChild(wrapper);
-    });
     editable.style.fontSize = data.fontSize || '';
     editable.style.alignItems = data.alignItems || 'flex-start';
     editable.style.justifyContent = data.justifyContent || 'flex-start';
