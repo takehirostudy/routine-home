@@ -252,7 +252,7 @@ function applyHistory(stateStr) {
     const cell = document.querySelector(`.cell[data-row='${data.row}'][data-col='${data.col}']`);
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
-    editable.innerHTML = data.html || "";
+    editable.innerHTML = typeof data.html === 'string' ? data.html : "";
     editable.style.fontSize = data.fontSize;
     editable.style.alignItems = data.alignItems;
     editable.style.justifyContent = data.justifyContent;
@@ -261,19 +261,13 @@ function applyHistory(stateStr) {
     cell.style.display = data.display;
     cell.style.gridRow = data.gridRow;
     cell.style.gridColumn = data.gridColumn;
-    if (data.imgSrc && /^data:image\//.test(data.imgSrc)) {
-      if (data.imgSrc && data.imgSrc.startsWith("data:image/")) {
-      img.src = data.imgSrc;
-      img.style.display = 'block';
-    } else {
-      img.src = "";
-      img.style.display = 'none';
-    }
-    } else {
-      img.src = "";
-      img.style.display = 'none';
-    }
-    img.style.display = img.src ? 'block' : 'none';
+    if (data.imgSrc && data.imgSrc.startsWith("data:image/")) {
+  img.src = data.imgSrc;
+  img.style.display = 'block';
+} else {
+  img.src = "";
+  img.style.display = 'none';
+}
     editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
       cb.checked = cb.hasAttribute("checked");
       const sp = cb.nextElementSibling;
@@ -340,7 +334,7 @@ function restoreState() {
     const cell = document.querySelector(`.cell[data-row='${data.row}'][data-col='${data.col}']`);
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
-    editable.innerHTML = data.html || "";
+    editable.innerHTML = typeof data.html === 'string' ? data.html : "";
     editable.style.fontSize = data.fontSize;
     editable.style.alignItems = data.alignItems;
     editable.style.justifyContent = data.justifyContent;
@@ -349,19 +343,13 @@ function restoreState() {
     cell.style.display = data.display;
     cell.style.gridRow = data.gridRow;
     cell.style.gridColumn = data.gridColumn;
-    if (data.imgSrc && /^data:image\//.test(data.imgSrc)) {
-      if (data.imgSrc && data.imgSrc.startsWith("data:image/")) {
-      img.src = data.imgSrc;
-      img.style.display = 'block';
-    } else {
-      img.src = "";
-      img.style.display = 'none';
-    }
-    } else {
-      img.src = "";
-      img.style.display = 'none';
-    }
-    img.style.display = img.src ? 'block' : 'none';
+    if (data.imgSrc && data.imgSrc.startsWith("data:image/")) {
+  img.src = data.imgSrc;
+  img.style.display = 'block';
+} else {
+  img.src = "";
+  img.style.display = 'none';
+}
     editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
       cb.checked = cb.hasAttribute("checked");
       const sp = cb.nextElementSibling;
@@ -535,3 +523,4 @@ document.getElementById("resetBtn").addEventListener("click", () => {
 </script>
 </body>
 </html>
+
