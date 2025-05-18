@@ -186,7 +186,10 @@ function restoreState() {
     const cell = getCell(data.row, data.col);
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
-    editable.innerHTML = data.html || '';
+    editable.innerHTML = '';
+    // 既存のチェックボックス要素を除去
+    const existingCheckboxes = editable.querySelectorAll("input[type='checkbox']");
+    existingCheckboxes.forEach(cb => cb.closest("span")?.remove());
     data.checkboxes?.forEach(({ checked, text, bold, textDecoration }) => {
       const wrapper = document.createElement("span");
       wrapper.style.display = "inline-flex";
