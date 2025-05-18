@@ -131,7 +131,9 @@
           cell.dataset.row = row;
           cell.dataset.col = col;
 
-          $1
+          const editable = document.createElement("div");
+          editable.className = "editable";
+          editable.contentEditable = true;
           editable.addEventListener("input", () => {
             saveState();
           });
