@@ -144,7 +144,6 @@ function saveState() {
   const state = [...grid.children].map(cell => {
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
-        });
     return {
     row: cell.dataset.row,
     col: cell.dataset.col,
@@ -285,7 +284,6 @@ window.onload = () => {
   });
   createGrid();
   restoreState();
-  saveState();
 
   // タイトル変更
   titleInput.addEventListener("input", saveState);
