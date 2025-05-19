@@ -371,8 +371,15 @@ function pushHistory() {
       textAlign: editable.style.textAlign
     };
   });
+  // 変更後の状態が最後の履歴と同じ場合はスキップ
+  const newStateStr = JSON.stringify(state);
+  if (historyIndex >= 0 && history[historyIndex] === newStateStr) {
+    return;
+  }
+  
+  // 現在のインデックス以降の履歴を削除
   history = history.slice(0, historyIndex + 1);
-  history.push(JSON.stringify(state));
+  history.push(newStateStr);
   historyIndex++;
 }
 
@@ -415,17 +422,23 @@ function applyHistory(stateStr) {
       img.src = "";
       img.style.display = 'none';
     }
-    editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
-      cb.checked = cb.hasAttribute("checked");
-      const sp = cb.nextElementSibling;
-      if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
-      cb.addEventListener("change", () => {
-        if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
-        saveState();
-        pushHistory();
-      });
+  });
+  
+  // チェックボックスのイベントリスナーを再設定
+  document.querySelectorAll(".cell input[type='checkbox']").forEach(cb => {
+    const sp = cb.nextElementSibling;
+    if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
+    
+    // 既存のリスナーを削除してから新しいリスナーを追加
+    const newCb = cb.cloneNode(true);
+    cb.parentNode.replaceChild(newCb, cb);
+    newCb.addEventListener("change", () => {
+      if (sp) sp.style.textDecoration = newCb.checked ? "line-through" : "none";
+      saveState();
+      pushHistory();
     });
   });
+  
   saveState();
 }
 // === 状態保存と復元 ===
