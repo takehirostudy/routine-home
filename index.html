@@ -12,31 +12,26 @@
       font-family: sans-serif; 
       background-color: #f5f5f5;
     }
-    
     .container {
-      max-width: 1400px;
+      max-width: 1200px;
       margin: 0 auto;
     }
-    
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
     }
-    
     .header h1 {
       margin: 0;
       color: #333;
       font-size: 2em;
     }
-    
-    .header-buttons {
+    .top-nav {
       display: flex;
       gap: 10px;
     }
-    
-    .top-right-btn {
+    .nav-btn {
       padding: 8px 15px;
       font-size: 14px;
       border: none;
@@ -47,53 +42,46 @@
       text-decoration: none;
       transition: background-color 0.3s;
     }
-    
-    .top-right-btn:hover {
+    .nav-btn:hover {
       background-color: #3367d6;
     }
-    
-    .date-title-section {
+    .content-wrapper {
       background-color: white;
-      padding: 20px;
       border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
-    
     #dateDisplay {
       font-weight: bold;
       font-size: 1.2em;
       margin-bottom: 10px;
       color: #333;
     }
-    
     .title-input {
       font-size: 1.5em;
       width: 100%;
       border: 1px solid #ddd;
-      color: #333;
+      border-radius: 5px;
+      padding: 10px;
+      color: #666;
       outline: none;
       text-align: center;
-      padding: 8px;
-      border-radius: 5px;
+      margin-bottom: 20px;
       background-color: #fafafa;
     }
-    
     .title-input::placeholder {
       color: #bbb;
     }
-    
     .controls { 
       display: flex; 
       flex-wrap: wrap; 
       gap: 8px; 
-      margin-bottom: 20px; 
-      background-color: white;
+      margin-bottom: 20px;
       padding: 15px;
+      background-color: #f8f9fa;
       border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e9ecef;
     }
-    
     .grid-container {
       display: grid;
       grid-template-columns: repeat(20, 1fr);
@@ -101,15 +89,13 @@
       width: 100%;
       height: 70vh;
       gap: 1px;
-      border: 1px solid #ddd;
-      background-color: white;
+      border: 2px solid #ddd;
       border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      background-color: #ddd;
       overflow: hidden;
     }
-    
     .cell {
-      border: 1px solid #e0e0e0;
+      border: 1px solid #aaa;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -118,11 +104,10 @@
       font-size: 1vw;
       background-color: white;
     }
-    
     .cell.selected { 
       outline: 2px solid #4285f4; 
+      outline-offset: -2px;
     }
-    
     .editable {
       width: 100%;
       height: 100%;
@@ -138,144 +123,111 @@
       overflow: auto;
       white-space: pre-wrap;
       word-break: break-word;
-      background-color: transparent;
     }
-    
     .cell img {
       width: 100%;
       height: 100%;
       object-fit: contain;
       display: block;
     }
-    
     button {
       padding: 6px 12px;
-      font-size: 12px;
+      font-size: 13px;
       cursor: pointer;
       border: 1px solid #ddd;
-      background-color: #fff;
       border-radius: 4px;
-      transition: background-color 0.2s;
+      background-color: white;
+      transition: all 0.2s;
     }
-    
     button:hover {
-      background-color: #f5f5f5;
+      background-color: #f8f9fa;
+      border-color: #4285f4;
     }
-    
     .color-btn {
-      width: 24px;
-      height: 24px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      width: 28px;
+      height: 28px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
       cursor: pointer;
       transition: transform 0.2s;
     }
-    
     .color-btn:hover {
       transform: scale(1.1);
+      border-color: #4285f4;
     }
-    
     .size-btn {
       width: 36px;
       height: 36px;
       border: 1px solid #ddd;
-      border-radius: 4px;
-      background-color: #fff;
+      border-radius: 6px;
+      background-color: white;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background-color 0.2s;
+      transition: all 0.2s;
     }
-    
     .size-btn:hover {
-      background-color: #f0f0f0;
+      background-color: #f8f9fa;
+      border-color: #4285f4;
     }
-    
-    /* Share Modal Styles */
-    .modal {
+    .share-modal {
       display: none;
       position: fixed;
-      z-index: 1000;
-      left: 0;
       top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0,0,0,0.5);
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
     }
-    
-    .modal-content {
+    .share-modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       background-color: white;
-      margin: 15% auto;
       padding: 30px;
-      border-radius: 8px;
-      width: 400px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 90%;
     }
-    
-    .modal-header {
-      margin-bottom: 20px;
-    }
-    
-    .modal-header h2 {
-      margin: 0;
+    .share-modal h3 {
+      margin-top: 0;
       color: #333;
+      text-align: center;
     }
-    
-    .share-link-container {
-      margin: 20px 0;
-      padding: 15px;
-      background-color: #f9f9f9;
-      border-radius: 5px;
+    .share-url {
+      width: 100%;
+      padding: 10px;
       border: 1px solid #ddd;
-    }
-    
-    .share-link {
-      word-break: break-all;
-      color: #4285f4;
+      border-radius: 5px;
       font-family: monospace;
-      font-size: 14px;
+      background-color: #f8f9fa;
+      text-align: center;
+      margin: 15px 0;
     }
-    
-    .modal-buttons {
+    .share-buttons {
       display: flex;
       gap: 10px;
       justify-content: center;
-      margin-top: 20px;
     }
-    
-    .modal-btn {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    
-    .btn-primary {
+    .share-btn-primary {
       background-color: #4285f4;
       color: white;
-    }
-    
-    .btn-secondary {
-      background-color: #f1f1f1;
-      color: #333;
-    }
-    
-    .close {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      position: absolute;
-      right: 15px;
-      top: 10px;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
       cursor: pointer;
     }
-    
-    .close:hover {
+    .share-btn-secondary {
+      background-color: #f1f1f1;
       color: #333;
+      border: 1px solid #ddd;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -283,61 +235,56 @@
   <div class="container">
     <div class="header">
       <h1>Brain Hacker Home</h1>
-      <div class="header-buttons">
-        <button class="top-right-btn" id="shareBtn">Share</button>
-        <a href="record.html" class="top-right-btn">Record</a>
+      <div class="top-nav">
+        <button class="nav-btn" id="shareBtn">Share</button>
+        <a href="record.html" class="nav-btn">Record</a>
       </div>
     </div>
     
-    <div class="date-title-section">
+    <div class="content-wrapper">
       <div id="dateDisplay"></div>
-      <input class="title-input" id="pageTitle" placeholder="Brain Hacker Home" />
+      <input class="title-input" id="pageTitle" placeholder="Brain hacker" />
+      
+      <div class="controls">
+        <button class="color-btn" data-color="#ffa500" style="background-color:#ffa500;"></button>
+        <button class="color-btn" data-color="#f2c1c1" style="background-color:#f2c1c1;"></button>
+        <button class="color-btn" data-color="#ffef5b" style="background-color:#ffef5b;"></button>
+        <button class="color-btn" data-color="#d0f0c0" style="background-color:#d0f0c0;"></button>
+        <button class="color-btn" data-color="#a2dff7" style="background-color:#a2dff7;"></button>
+        <button class="color-btn" data-color="#d8d8d8" style="background-color:#d8d8d8;"></button>
+        <button class="color-btn" data-color="#ffffff" style="background-color:#ffffff;"></button>
+        <button id="mergeBtn">integrate</button>
+        <button id="splitBtn">separate</button>
+        <button id="insertCheckboxBtn">✅ check</button>
+        <button id="insertBoldCheckboxBtn">☑️ check</button>
+        <button id="uploadImageBtn">🖼️</button>
+        <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+        <button class="size-btn" data-size="2.56vw" style="font-size:2.56vw;">A</button>
+        <button class="size-btn" data-size="1.92vw" style="font-size:1.92vw;">A</button>
+        <button class="size-btn" data-size="1.6vw" style="font-size:1.6vw;">A</button>
+        <button class="size-btn" data-size="1.28vw" style="font-size:1.28vw;">A</button>
+        <button class="size-btn" data-size="0.8vw" style="font-size:0.8vw;">A</button>
+        <button id="undoBtn">↩️</button>
+        <button id="redoBtn">↪️</button>
+        <button id="resetBtn">🔄</button>
+        <button id="deleteBtn">🗑️</button>
+        <button id="alignTopLeftBtn">left alignment</button>
+        <button id="alignCenterBtn">centered</button>
+      </div>
+      
+      <div class="grid-container" id="grid"></div>
     </div>
-    
-    <div class="controls">
-      <button class="color-btn" data-color="#ffa500" style="background-color:#ffa500;"></button>
-      <button class="color-btn" data-color="#f2c1c1" style="background-color:#f2c1c1;"></button>
-      <button class="color-btn" data-color="#ffef5b" style="background-color:#ffef5b;"></button>
-      <button class="color-btn" data-color="#d0f0c0" style="background-color:#d0f0c0;"></button>
-      <button class="color-btn" data-color="#a2dff7" style="background-color:#a2dff7;"></button>
-      <button class="color-btn" data-color="#d8d8d8" style="background-color:#d8d8d8;"></button>
-      <button class="color-btn" data-color="#ffffff" style="background-color:#ffffff;"></button>
-      <button id="mergeBtn">integrate</button>
-      <button id="splitBtn">separate</button>
-      <button id="insertCheckboxBtn">✅ check</button>
-      <button id="insertBoldCheckboxBtn">☑️ check</button>
-      <button id="uploadImageBtn">🖼️</button>
-      <input type="file" id="imageInput" accept="image/*" style="display: none;" />
-      <button class="size-btn" data-size="2.56vw" style="font-size:2.56vw;">A</button>
-      <button class="size-btn" data-size="1.92vw" style="font-size:1.92vw;">A</button>
-      <button class="size-btn" data-size="1.6vw" style="font-size:1.6vw;">A</button>
-      <button class="size-btn" data-size="1.28vw" style="font-size:1.28vw;">A</button>
-      <button class="size-btn" data-size="0.8vw" style="font-size:0.8vw;">A</button>
-      <button id="undoBtn">↩️</button>
-      <button id="redoBtn">↪️</button>
-      <button id="resetBtn">🔄</button>
-      <button id="deleteBtn">🗑️</button>
-      <button id="alignTopLeftBtn">left alignment</button>
-      <button id="alignCenterBtn">centered</button>
-    </div>
-    
-    <div class="grid-container" id="grid"></div>
   </div>
 
   <!-- Share Modal -->
-  <div id="shareModal" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <div class="modal-header">
-        <h2>Share Your Brain Hacker</h2>
-        <p>Others can view your record using this link:</p>
-      </div>
-      <div class="share-link-container">
-        <div class="share-link" id="shareLink"></div>
-      </div>
-      <div class="modal-buttons">
-        <button class="modal-btn btn-primary" id="copyLinkBtn">Copy Link</button>
-        <button class="modal-btn btn-secondary" id="closeModalBtn">Close</button>
+  <div class="share-modal" id="shareModal">
+    <div class="share-modal-content">
+      <h3>Share Your Brain Hacker</h3>
+      <p>Share this link to let others view your task completion records:</p>
+      <input type="text" class="share-url" id="shareUrl" readonly>
+      <div class="share-buttons">
+        <button class="share-btn-primary" id="copyBtn">Copy Link</button>
+        <button class="share-btn-secondary" id="closeModal">Close</button>
       </div>
     </div>
   </div>
@@ -358,81 +305,6 @@ document.getElementById("pageTitle").value = localStorage.getItem("pageTitle") |
 document.getElementById("pageTitle").addEventListener("input", () => {
   localStorage.setItem("pageTitle", document.getElementById("pageTitle").value);
 });
-
-// === Share機能 ===
-const shareBtn = document.getElementById("shareBtn");
-const shareModal = document.getElementById("shareModal");
-const closeModal = document.getElementsByClassName("close")[0];
-const closeModalBtn = document.getElementById("closeModalBtn");
-const copyLinkBtn = document.getElementById("copyLinkBtn");
-const shareLink = document.getElementById("shareLink");
-
-shareBtn.addEventListener("click", () => {
-  // Generate share ID
-  const shareId = generateShareId();
-  const shareUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}record.html?shared=${shareId}`;
-  
-  // Save shared data
-  saveSharedData(shareId);
-  
-  shareLink.textContent = shareUrl;
-  shareModal.style.display = "block";
-});
-
-closeModal.addEventListener("click", () => {
-  shareModal.style.display = "none";
-});
-
-closeModalBtn.addEventListener("click", () => {
-  shareModal.style.display = "none";
-});
-
-copyLinkBtn.addEventListener("click", () => {
-  navigator.clipboard.writeText(shareLink.textContent).then(() => {
-    copyLinkBtn.textContent = "Copied!";
-    setTimeout(() => {
-      copyLinkBtn.textContent = "Copy Link";
-    }, 2000);
-  });
-});
-
-window.addEventListener("click", (event) => {
-  if (event.target === shareModal) {
-    shareModal.style.display = "none";
-  }
-});
-
-function generateShareId() {
-  return 'share_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-}
-
-function saveSharedData(shareId) {
-  // Collect data from the last 30 days
-  const sharedData = {};
-  
-  for (let i = 0; i < 30; i++) {
-    const dateKey = getDateKey(i);
-    const dataKey = `brainhack-${dateKey}`;
-    const data = localStorage.getItem(dataKey);
-    
-    if (data) {
-      sharedData[dateKey] = data;
-    }
-  }
-  
-  // Save to localStorage with share ID
-  localStorage.setItem(`shared-${shareId}`, JSON.stringify({
-    data: sharedData,
-    title: localStorage.getItem("pageTitle") || "Brain Hacker",
-    createdAt: new Date().toISOString()
-  }));
-}
-
-function getDateKey(daysAgo) {
-  const date = new Date();
-  date.setDate(date.getDate() - daysAgo);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
 
 // === グリッド生成 ===
 const pageTitle = document.getElementById("pageTitle");
@@ -763,4 +635,77 @@ document.getElementById("mergeBtn").addEventListener("click", () => {
 // === セル分離 ===
 document.getElementById("splitBtn").addEventListener("click", () => {
   if (selectedCells.size !== 1) return;
-  const [r
+  const [r, c] = [...selectedCells][0].split(',').map(Number);
+  const base = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+  const rowStart = r;
+  const rowSpan = parseInt(base.style.gridRow?.split("span ")[1]) || 1;
+  const colStart = c;
+  const colSpan = parseInt(base.style.gridColumn?.split("span ")[1]) || 1;
+  base.style.gridRow = "";
+  base.style.gridColumn = "";
+  for (let i = rowStart; i < rowStart + rowSpan; i++) {
+    for (let j = colStart; j < colStart + colSpan; j++) {
+      const cell = document.querySelector(`.cell[data-row='${i}'][data-col='${j}']`);
+      cell.style.display = "flex";
+    }
+  }
+  saveState();
+});
+
+// === 整列（中央 / 左） ===
+document.getElementById("alignCenterBtn").addEventListener("click", () => {
+  for (const key of selectedCells) {
+    const [r, c] = key.split(',');
+    const editable = document.querySelector(`.cell[data-row='${r}'][data-col='${c}'] .editable`);
+    editable.style.alignItems = "center";
+    editable.style.justifyContent = "center";
+    editable.style.textAlign = "center";
+  }
+  saveState();
+});
+document.getElementById("alignTopLeftBtn").addEventListener("click", () => {
+  for (const key of selectedCells) {
+    const [r, c] = key.split(',');
+    const editable = document.querySelector(`.cell[data-row='${r}'][data-col='${c}'] .editable`);
+    editable.style.alignItems = "flex-start";
+    editable.style.justifyContent = "flex-start";
+    editable.style.textAlign = "left";
+  }
+  saveState();
+});
+
+// === 削除ボタン ===
+document.getElementById("deleteBtn").addEventListener("click", () => {
+  for (const key of selectedCells) {
+    const [r, c] = key.split(',');
+    const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+    cell.querySelector(".editable").innerHTML = "";
+    const img = cell.querySelector("img");
+    img.src = "";
+    img.style.display = "none";
+  }
+  saveState();
+});
+
+// === フォントサイズ変更 ===
+for (const btn of document.querySelectorAll(".size-btn")) {
+  btn.addEventListener("click", () => {
+    const size = btn.dataset.size;
+    for (const key of selectedCells) {
+      const [r, c] = key.split(',');
+      const editable = document.querySelector(`.cell[data-row='${r}'][data-col='${c}'] .editable`);
+      editable.style.fontSize = size;
+    }
+    saveState();
+  });
+}
+
+// === リセットボタン ===
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (confirm("全データをリセットしますか？")) {
+    document.querySelectorAll(".cell").forEach(cell => {
+      const editable = cell.querySelector(".editable");
+      const img = cell.querySelector("img");
+      editable.innerHTML = "";
+      editable.style.fontSize = "";
+      editable.style
