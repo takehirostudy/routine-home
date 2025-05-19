@@ -1,37 +1,93 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Brain Hacker</title>
+  <title>Brain Hacker Home</title>
   <style>
-    body { margin: 0; padding: 10px; font-family: sans-serif; }
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: sans-serif;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .header h1 {
+      margin: 0;
+      color: #333;
+    }
+    
     .top-right-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 1000;
-      padding: 6px 10px;
-      font-size: 14px;
-      border: none;
+      padding: 8px 15px;
       background-color: #4285f4;
       color: white;
+      border: none;
       border-radius: 5px;
-      cursor: pointer;
       text-decoration: none;
+      font-size: 14px;
+      cursor: pointer;
     }
-    .controls { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    
+    #dateDisplay {
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+    
+    .title-input {
+      font-size: 2em;
+      width: 100%;
+      border: none;
+      color: black;
+      outline: none;
+      text-align: center;
+      margin-bottom: 15px;
+      background-color: transparent;
+    }
+    
+    .title-input::placeholder {
+      color: #bbb;
+    }
+    
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 15px;
+      background-color: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
     .grid-container {
       display: grid;
       grid-template-columns: repeat(20, 1fr);
       grid-template-rows: repeat(16, 1fr);
-      width: 100vw;
+      width: 100%;
       height: 80vh;
       gap: 1px;
       border: 1px solid #ccc;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
+    
     .cell {
-      border: 1px solid #aaa;
+      border: 1px solid #ddd;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -39,7 +95,11 @@
       padding: 1px;
       font-size: 1vw;
     }
-    .cell.selected { outline: 2px solid #4285f4; }
+    
+    .cell.selected {
+      outline: 2px solid #4285f4;
+    }
+    
     .editable {
       width: 100%;
       height: 100%;
@@ -56,78 +116,196 @@
       white-space: pre-wrap;
       word-break: break-word;
     }
+    
     .cell img {
       width: 100%;
       height: 100%;
       object-fit: contain;
       display: block;
     }
+    
     button {
-      padding: 4px 6px;
-      font-size: 12px;
+      padding: 6px 10px;
+      font-size: 13px;
       cursor: pointer;
+      background-color: #f1f1f1;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      transition: background-color 0.2s;
     }
+    
+    button:hover {
+      background-color: #e5e5e5;
+    }
+    
+    .color-btn {
+      width: 24px;
+      height: 24px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    
     .size-btn {
       width: 32px;
       height: 32px;
-      border: none;
+      border: 1px solid #ddd;
       border-radius: 4px;
-      background-color: #f0f0f0;
+      background-color: #f9f9f9;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .title-input {
-      font-size: 2em;
-      width: 100%;
-      border: none;
-      color: black;
-      outline: none;
+    
+    .share-container {
+      margin-top: 20px;
       text-align: center;
     }
-    .title-input::placeholder {
-      color: #bbb;
+    
+    .share-btn {
+      padding: 10px 20px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
     }
-    #dateDisplay {
-      font-weight: bold;
+    
+    .share-btn:hover {
+      background-color: #3367d6;
+    }
+    
+    .share-dialog {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      max-width: 500px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+    }
+    
+    .dialog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .dialog-title {
       font-size: 1.2em;
-      margin-bottom: 6px;
+      font-weight: bold;
+      margin: 0;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      cursor: pointer;
+      padding: 0;
+    }
+    
+    .share-link-container {
+      margin: 15px 0;
+    }
+    
+    .share-link {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    
+    .copy-btn {
+      padding: 8px 15px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 900;
     }
   </style>
 </head>
 <body>
-  <a href="record.html" class="top-right-btn">Record</a>
-  <div id="dateDisplay"></div>
-  <input class="title-input" id="pageTitle" placeholder="Brain hacker" />
-  <div class="controls">
-    <button class="color-btn" data-color="#ffa500" style="background-color:#ffa500; width:24px; height:24px;"></button>
-    <button class="color-btn" data-color="#f2c1c1" style="background-color:#f2c1c1; width:24px; height:24px;"></button>
-    <button class="color-btn" data-color="#ffef5b" style="background-color:#ffef5b; width:24px; height:24px;"></button>
-    <button class="color-btn" data-color="#d0f0c0" style="background-color:#d0f0c0; width:24px; height:24px;"></button>
-    <button class="color-btn" data-color="#a2dff7" style="background-color:#a2dff7; width:24px; height:24px;"></button>
-    <button class="color-btn" data-color="#d8d8d8" style="background-color:#d8d8d8; width:24px; height:24px;"></button>
-    <button class="color-btn" data-color="#ffffff" style="background-color:#ffffff; width:24px; height:24px;"></button>
-    <button id="mergeBtn">integrate</button>
-    <button id="splitBtn">separate</button>
-    <button id="insertCheckboxBtn">✅ check</button>
-    <button id="insertBoldCheckboxBtn">☑️ check</button>
-    <button id="uploadImageBtn">🖼️</button>
-    <input type="file" id="imageInput" accept="image/*" style="display: none;" />
-    <button class="size-btn" data-size="2.56vw" style="font-size:2.56vw;">A</button>
-    <button class="size-btn" data-size="1.92vw" style="font-size:1.92vw;">A</button>
-    <button class="size-btn" data-size="1.6vw" style="font-size:1.6vw;">A</button>
-    <button class="size-btn" data-size="1.28vw" style="font-size:1.28vw;">A</button>
-    <button class="size-btn" data-size="0.8vw" style="font-size:0.8vw;">A</button>
-    <button id="undoBtn">↩️</button>
-    <button id="redoBtn">↪️</button>
-    <button id="resetBtn">🔄</button>
-    <button id="deleteBtn">🗑️</button>
-    <button id="alignTopLeftBtn">left alignment</button>
-    <button id="alignCenterBtn">centered</button>
+  <div class="container">
+    <div class="header">
+      <h1>Brain Hacker Home</h1>
+      <a href="record.html" class="top-right-btn">Record</a>
+    </div>
+    
+    <div id="dateDisplay"></div>
+    <input class="title-input" id="pageTitle" placeholder="Brain hacker" />
+    
+    <div class="controls">
+      <button class="color-btn" data-color="#ffa500" style="background-color:#ffa500;"></button>
+      <button class="color-btn" data-color="#f2c1c1" style="background-color:#f2c1c1;"></button>
+      <button class="color-btn" data-color="#ffef5b" style="background-color:#ffef5b;"></button>
+      <button class="color-btn" data-color="#d0f0c0" style="background-color:#d0f0c0;"></button>
+      <button class="color-btn" data-color="#a2dff7" style="background-color:#a2dff7;"></button>
+      <button class="color-btn" data-color="#d8d8d8" style="background-color:#d8d8d8;"></button>
+      <button class="color-btn" data-color="#ffffff" style="background-color:#ffffff;"></button>
+      <button id="mergeBtn">integrate</button>
+      <button id="splitBtn">separate</button>
+      <button id="insertCheckboxBtn">✅ check</button>
+      <button id="insertBoldCheckboxBtn">☑️ check</button>
+      <button id="uploadImageBtn">🖼️</button>
+      <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+      <button class="size-btn" data-size="2.56vw" style="font-size:2.56vw;">A</button>
+      <button class="size-btn" data-size="1.92vw" style="font-size:1.92vw;">A</button>
+      <button class="size-btn" data-size="1.6vw" style="font-size:1.6vw;">A</button>
+      <button class="size-btn" data-size="1.28vw" style="font-size:1.28vw;">A</button>
+      <button class="size-btn" data-size="0.8vw" style="font-size:0.8vw;">A</button>
+      <button id="undoBtn">↩️</button>
+      <button id="redoBtn">↪️</button>
+      <button id="resetBtn">🔄</button>
+      <button id="deleteBtn">🗑️</button>
+      <button id="alignTopLeftBtn">left alignment</button>
+      <button id="alignCenterBtn">centered</button>
+    </div>
+    
+    <div class="grid-container" id="grid"></div>
+    
+    <div class="share-container">
+      <button class="share-btn" id="shareBtn">Generate Share Link</button>
+    </div>
   </div>
-  <div class="grid-container" id="grid"></div>
-<!-- 中略なしでJavaScriptを含む完全なコードを展開 -->
+  
+  <!-- Share Dialog -->
+  <div class="overlay" id="overlay"></div>
+  <div class="share-dialog" id="shareDialog">
+    <div class="dialog-header">
+      <h3 class="dialog-title">Share Your Brain Hacker</h3>
+      <button class="close-btn" id="closeDialog">&times;</button>
+    </div>
+    <p>Share this link with others to let them see your Brain Hacker records:</p>
+    <div class="share-link-container">
+      <input type="text" class="share-link" id="shareLink" readonly>
+      <button class="copy-btn" id="copyBtn">Copy Link</button>
+    </div>
+    <p><small>Note: Anyone with this link can view your task progress in their Record tab.</small></p>
+  </div>
+
 <script>
 // === 日付とタイトル ===
 function getTodayKey() {
@@ -550,16 +728,4 @@ document.getElementById("resetBtn").addEventListener("click", () => {
       cell.style.backgroundColor = "";
       cell.style.display = "flex";
       cell.style.gridRow = "";
-      cell.style.gridColumn = "";
-      img.src = "";
-      img.style.display = "none";
-    });
-    saveState();
-    localStorage.removeItem(`brainhack-${getTodayKey()}`);
-    // タイトルは削除しない
-    location.reload();
-  }
-});
-</script>
-</body>
-</html>
+      cell.style
