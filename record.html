@@ -1,190 +1,658 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Record</title>
+  <title>Brain Hacker - Record</title>
   <style>
     body {
       margin: 0;
       padding: 20px;
       font-family: sans-serif;
-      background: #f8f9fa;
+      background-color: #f5f5f5;
     }
-    .nav {
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
       display: flex;
-      justify-content: flex-start;
-      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 20px;
     }
-    .nav button {
-      padding: 6px 12px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      background-color: white;
-      cursor: pointer;
-      border-radius: 4px;
+    
+    .header h1 {
+      margin: 0;
+      color: #333;
     }
-    .top-right-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 6px 10px;
-      font-size: 14px;
-      border: none;
+    
+    .home-btn {
+      padding: 8px 15px;
       background-color: #4285f4;
       color: white;
+      border: none;
       border-radius: 5px;
       text-decoration: none;
+      font-size: 14px;
     }
-    .section {
-      margin-bottom: 40px;
-    }
-    .section h2 {
-      margin-bottom: 10px;
-    }
-    .summary-grid {
+    
+    .tabs {
       display: flex;
-      gap: 20px;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 20px;
     }
-    .summary-card {
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 12px;
-      width: 45%;
+    
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-bottom: none;
+      margin-right: 5px;
+      border-radius: 5px 5px 0 0;
     }
-    .summary-card h3 {
-      margin: 0 0 10px 0;
-    }
-    .summary-card .rate {
+    
+    .tab.active {
+      background-color: white;
+      border-color: #ccc;
+      color: #4285f4;
       font-weight: bold;
-      margin-bottom: 6px;
     }
-    .summary-card .comment {
+    
+    .tab:hover:not(.active) {
+      background-color: #e9e9e9;
+    }
+    
+    .tab-content {
+      display: none;
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card h3 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    
+    .stat-value {
+      font-size: 2.5em;
+      font-weight: bold;
+      color: #4285f4;
+      margin: 10px 0;
+    }
+    
+    .streak-container {
+      margin-bottom: 30px;
+    }
+    
+    .streak-title {
+      font-size: 1.2em;
+      font-weight: bold;
       margin-bottom: 10px;
+      color: #333;
     }
-    .archive-list {
-      background: white;
-      padding: 10px;
-      border: 1px solid #ccc;
+    
+    .streak-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 15px;
+    }
+    
+    .streak-item {
+      padding: 15px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .streak-item-title {
+      margin-top: 0;
+      font-size: 1em;
+      display: flex;
+      align-items: center;
+    }
+    
+    .streak-count {
+      display: inline-block;
+      margin-left: 10px;
+      padding: 3px 8px;
+      background-color: #4285f4;
+      color: white;
+      border-radius: 12px;
+      font-size: 0.85em;
+    }
+    
+    .history-container {
+      margin-bottom: 30px;
+    }
+    
+    .history-title {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    
+    .history-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 15px;
+    }
+    
+    .history-card {
+      padding: 15px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    .history-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .history-date {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .history-completion {
+      font-size: 1.2em;
+      color: #4285f4;
+      margin: 10px 0;
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background-color: #e9e9e9;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background-color: #4285f4;
       border-radius: 4px;
     }
-    .archive-list a {
-      display: block;
-      padding: 4px 0;
-      color: #0077cc;
-      text-decoration: none;
+    
+    .share-container {
+      margin-top: 30px;
+      text-align: center;
     }
-    .archive-list a:hover {
-      text-decoration: underline;
+    
+    .share-btn {
+      padding: 10px 20px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
     }
-    .streak {
-      font-weight: bold;
-      color: #28a745;
-      margin-bottom: 10px;
+    
+    .share-btn:hover {
+      background-color: #3367d6;
+    }
+    
+    .add-user-btn {
+      padding: 6px 12px;
+      background-color: #f1f1f1;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+    }
+    
+    .add-user-btn i {
+      margin-right: 5px;
+    }
+    
+    .no-data {
+      text-align: center;
+      padding: 40px 0;
+      color: #999;
+      font-style: italic;
+    }
+    
+    /* プラスボタン用のスタイル */
+    .plus-icon {
+      font-size: 1.2em;
+      margin-right: 5px;
     }
   </style>
 </head>
 <body>
-  <a href="https://takehirostudy.github.io/routine-home/" class="top-right-btn">Brain Hacker</a>
-
-  <div class="nav">
-    <button onclick="showUser('me')">あなた</button>
-    <button onclick="showUser('userA')">他のユーザーA</button>
-    <button onclick="showUser('userB')">他のユーザーB</button>
+  <div class="container">
+    <div class="header">
+      <h1>Brain Hacker Record</h1>
+      <a href="index.html" class="home-btn">Home</a>
+    </div>
+    
+    <div class="tabs" id="user-tabs">
+      <div class="tab active" data-user="you">you</div>
+      <div class="tab" data-user="userA">userA</div>
+      <div class="tab" data-user="userB">userB</div>
+      <button class="add-user-btn"><span class="plus-icon">+</span> Add User</button>
+    </div>
+    
+    <div class="tab-content active" id="tab-you">
+      <div class="stats-container">
+        <div class="stat-card">
+          <h3>Today's Completion</h3>
+          <div class="stat-value" id="today-completion">0%</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="today-progress" style="width: 0%"></div>
+          </div>
+          <div id="today-detail">0/0 tasks completed</div>
+        </div>
+        
+        <div class="stat-card">
+          <h3>Yesterday's Completion</h3>
+          <div class="stat-value" id="yesterday-completion">0%</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="yesterday-progress" style="width: 0%"></div>
+          </div>
+          <div id="yesterday-detail">0/0 tasks completed</div>
+        </div>
+        
+        <div class="stat-card">
+          <h3>7-Day Average</h3>
+          <div class="stat-value" id="weekly-average">0%</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="weekly-progress" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="streak-container">
+        <div class="streak-title">Continuous Streaks</div>
+        <div class="streak-items" id="streak-items">
+          <!-- ストリークアイテムがここに動的に追加されます -->
+        </div>
+      </div>
+      
+      <div class="history-container">
+        <div class="history-title">History</div>
+        <div class="history-cards" id="history-cards">
+          <!-- 履歴カードがここに動的に追加されます -->
+        </div>
+      </div>
+      
+      <div class="share-container">
+        <button class="share-btn" id="generate-share-link">Generate Share Link</button>
+      </div>
+    </div>
+    
+    <div class="tab-content" id="tab-userA">
+      <div class="no-data">
+        No shared data available yet. When userA shares their data, it will appear here.
+      </div>
+    </div>
+    
+    <div class="tab-content" id="tab-userB">
+      <div class="no-data">
+        No shared data available yet. When userB shares their data, it will appear here.
+      </div>
+    </div>
   </div>
-
-  <div id="content"></div>
-
+  
   <script>
-    const users = {
-      me: {
-        streak: 5,
-        recent: [
-          {
-            date: "2025-05-18",
-            rate: "92%",
-            comment: "とても集中していた",
-            link: "brainhack-2025-05-18.html"
-          },
-          {
-            date: "2025-05-17",
-            rate: "88%",
-            comment: "目標達成度が高い",
-            link: "brainhack-2025-05-17.html"
-          }
-        ],
-        archive: ["2025-05-16", "2025-05-15", "2025-05-14"]
-      },
-      userA: {
-        streak: 3,
-        recent: [
-          {
-            date: "2025-05-18",
-            rate: "85%",
-            comment: "安定した取り組み",
-            link: "userA-2025-05-18.html"
-          },
-          {
-            date: "2025-05-17",
-            rate: "78%",
-            comment: "もう少し集中できたかも",
-            link: "userA-2025-05-17.html"
-          }
-        ],
-        archive: ["2025-05-16", "2025-05-15"]
-      },
-      userB: {
-        streak: 7,
-        recent: [
-          {
-            date: "2025-05-18",
-            rate: "98%",
-            comment: "完璧な実行日",
-            link: "userB-2025-05-18.html"
-          },
-          {
-            date: "2025-05-17",
-            rate: "94%",
-            comment: "順調に進行中",
-            link: "userB-2025-05-17.html"
-          }
-        ],
-        archive: ["2025-05-16", "2025-05-15"]
-      }
-    };
-
-    function showUser(key) {
-      const data = users[key];
-      const content = document.getElementById("content");
-      content.innerHTML = `
-        <div class="section">
-          <h2>${key === 'me' ? 'あなた' : key === 'userA' ? '他のユーザーA' : '他のユーザーB'}</h2>
-          <div class="streak">✅ チェックタスク継続日数: ${data.streak}日</div>
-          <div class="summary-grid">
-            ${data.recent.map(d => `
-              <div class="summary-card">
-                <h3>📅 ${d.date}</h3>
-                <div class="rate">達成率: ${d.rate}</div>
-                <div class="comment">💬 ${d.comment}</div>
-                <a href="${d.link}" target="_blank">その日の Brain Hackerページへ</a>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        <div class="section">
-          <h3>📚 過去の記録</h3>
-          <div class="archive-list">
-            ${data.archive.map(date => `<a href="brainhack-${date}.html" target="_blank">${date}</a>`).join('')}
-          </div>
-        </div>
-      `;
+    // タブ切り替え機能
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        // アクティブなタブを切り替え
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        // タブコンテンツの表示切り替え
+        const user = tab.dataset.user;
+        tabContents.forEach(content => content.classList.remove('active'));
+        document.getElementById(`tab-${user}`).classList.add('active');
+        
+        // ユーザーのデータを読み込み（初回表示時のみ）
+        if (user === 'you' && !document.getElementById('streak-items').children.length) {
+          loadUserData('you');
+        }
+      });
+    });
+    
+    // 日付操作ユーティリティ関数
+    function getTodayKey() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     }
-
-    // 初期表示：あなた
-    showUser('me');
+    
+    function getDateKey(daysAgo) {
+      const date = new Date();
+      date.setDate(date.getDate() - daysAgo);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+    
+    function formatDateDisplay(dateKey) {
+      const [year, month, day] = dateKey.split('-');
+      const date = new Date(year, month - 1, day);
+      const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+      return `${month}/${day} (${weekday})`;
+    }
+    
+    // ユーザーデータを読み込む
+    function loadUserData(user) {
+      if (user === 'you') {
+        loadTodayStats();
+        loadYesterdayStats();
+        loadWeeklyAverage();
+        loadStreaks();
+        loadHistory();
+      }
+    }
+    
+    // 保存データからチェックボックスの状態を解析
+    function analyzeCheckboxes(dataKey) {
+      const data = localStorage.getItem(dataKey);
+      if (!data) return { total: 0, completed: 0, completion: 0 };
+      
+      try {
+        const parsedData = JSON.parse(data);
+        let totalCheckboxes = 0;
+        let completedCheckboxes = 0;
+        
+        parsedData.forEach(cellData => {
+          if (!cellData.html) return;
+          
+          // HTML内のチェックボックスを解析するための一時的な要素
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = cellData.html;
+          
+          // チェックボックスを検索
+          const checkboxes = tempDiv.querySelectorAll('input[type="checkbox"]');
+          totalCheckboxes += checkboxes.length;
+          
+          // チェック済みのボックスをカウント
+          checkboxes.forEach(checkbox => {
+            if (checkbox.hasAttribute('checked')) {
+              completedCheckboxes++;
+            }
+          });
+        });
+        
+        const completionRate = totalCheckboxes > 0 ? Math.round((completedCheckboxes / totalCheckboxes) * 100) : 0;
+        
+        return {
+          total: totalCheckboxes,
+          completed: completedCheckboxes,
+          completion: completionRate
+        };
+      } catch (error) {
+        console.error('Error parsing data:', error);
+        return { total: 0, completed: 0, completion: 0 };
+      }
+    }
+    
+    // 固定タスク（同じ内容のチェックボックス）を特定し、連続達成状況を分析
+    function analyzeStreaks() {
+      // 過去30日間のデータを分析
+      const taskTexts = new Map(); // タスクテキスト => [連続日数, 最終日]
+      const taskHistory = new Map(); // タスクテキスト => Set(完了した日付)
+      
+      // 過去30日間のデータを順に処理
+      for (let i = 0; i < 30; i++) {
+        const dateKey = getDateKey(i);
+        const dataKey = `brainhack-${dateKey}`;
+        const data = localStorage.getItem(dataKey);
+        if (!data) continue;
+        
+        try {
+          const parsedData = JSON.parse(data);
+          
+          parsedData.forEach(cellData => {
+            if (!cellData.html) return;
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = cellData.html;
+            
+            // チェックボックス要素を探す
+            const checkboxSpans = tempDiv.querySelectorAll('span');
+            checkboxSpans.forEach(span => {
+              const checkbox = span.querySelector('input[type="checkbox"]');
+              const textSpan = span.querySelector('span');
+              
+              if (checkbox && textSpan && textSpan.textContent.trim()) {
+                const taskText = textSpan.textContent.trim();
+                
+                // タスクの履歴を記録
+                if (!taskHistory.has(taskText)) {
+                  taskHistory.set(taskText, new Set());
+                }
+                
+                // チェック済みならその日付を記録
+                if (checkbox.hasAttribute('checked')) {
+                  taskHistory.get(taskText).add(dateKey);
+                }
+              }
+            });
+          });
+        } catch (error) {
+          console.error(`Error parsing data for ${dateKey}:`, error);
+        }
+      }
+      
+      // 連続日数を計算
+      const today = getTodayKey();
+      const streaks = [];
+      
+      taskHistory.forEach((dates, taskText) => {
+        // 少なくとも3回以上出現したタスクのみ分析対象とする
+        if (dates.size < 3) return;
+        
+        let currentStreak = 0;
+        let maxStreak = 0;
+        let active = true;
+        
+        // 今日から過去に遡って連続日数を確認
+        for (let i = 0; i < 30; i++) {
+          const dateKey = getDateKey(i);
+          
+          if (dates.has(dateKey)) {
+            currentStreak++;
+          } else {
+            if (i === 0) active = false; // 今日完了していなければアクティブではない
+            break;
+          }
+        }
+        
+        // 結果を記録
+        streaks.push({
+          task: taskText,
+          streak: currentStreak,
+          active: active
+        });
+      });
+      
+      // 連続日数の長い順にソート
+      return streaks.sort((a, b) => b.streak - a.streak);
+    }
+    
+    // 今日のタスク完了状況を表示
+    function loadTodayStats() {
+      const todayKey = getTodayKey();
+      const stats = analyzeCheckboxes(`brainhack-${todayKey}`);
+      
+      document.getElementById('today-completion').textContent = `${stats.completion}%`;
+      document.getElementById('today-progress').style.width = `${stats.completion}%`;
+      document.getElementById('today-detail').textContent = `${stats.completed}/${stats.total} tasks completed`;
+    }
+    
+    // 昨日のタスク完了状況を表示
+    function loadYesterdayStats() {
+      const yesterdayKey = getDateKey(1);
+      const stats = analyzeCheckboxes(`brainhack-${yesterdayKey}`);
+      
+      document.getElementById('yesterday-completion').textContent = `${stats.completion}%`;
+      document.getElementById('yesterday-progress').style.width = `${stats.completion}%`;
+      document.getElementById('yesterday-detail').textContent = `${stats.completed}/${stats.total} tasks completed`;
+    }
+    
+    // 過去7日間の平均完了率を計算
+    function loadWeeklyAverage() {
+      let totalCompletion = 0;
+      let daysWithData = 0;
+      
+      for (let i = 0; i < 7; i++) {
+        const dateKey = getDateKey(i);
+        const stats = analyzeCheckboxes(`brainhack-${dateKey}`);
+        
+        if (stats.total > 0) {
+          totalCompletion += stats.completion;
+          daysWithData++;
+        }
+      }
+      
+      const average = daysWithData > 0 ? Math.round(totalCompletion / daysWithData) : 0;
+      document.getElementById('weekly-average').textContent = `${average}%`;
+      document.getElementById('weekly-progress').style.width = `${average}%`;
+    }
+    
+    // 連続達成ストリークを表示
+    function loadStreaks() {
+      const streaks = analyzeStreaks();
+      const streakContainer = document.getElementById('streak-items');
+      streakContainer.innerHTML = '';
+      
+      if (streaks.length === 0) {
+        streakContainer.innerHTML = '<div class="no-data">No continuous streaks found yet. Complete the same tasks daily to build streaks.</div>';
+        return;
+      }
+      
+      // 最大10個まで表示
+      const displayStreaks = streaks.slice(0, 10);
+      
+      displayStreaks.forEach(streak => {
+        const streakItem = document.createElement('div');
+        streakItem.className = 'streak-item';
+        
+        const title = document.createElement('h4');
+        title.className = 'streak-item-title';
+        title.textContent = streak.task;
+        
+        const count = document.createElement('span');
+        count.className = 'streak-count';
+        count.textContent = `${streak.streak} days`;
+        
+        title.appendChild(count);
+        streakItem.appendChild(title);
+        
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+        
+        const progressFill = document.createElement('div');
+        progressFill.className = 'progress-fill';
+        // 最大30日として表示
+        const progressWidth = Math.min(100, (streak.streak / 30) * 100);
+        progressFill.style.width = `${progressWidth}%`;
+        progressFill.style.backgroundColor = streak.active ? '#4caf50' : '#ff9800';
+        
+        progressBar.appendChild(progressFill);
+        streakItem.appendChild(progressBar);
+        
+        streakContainer.appendChild(streakItem);
+      });
+    }
+    
+    // 過去の履歴を表示
+    function loadHistory() {
+      const historyContainer = document.getElementById('history-cards');
+      historyContainer.innerHTML = '';
+      
+      // 過去14日間の履歴を表示
+      for (let i = 0; i < 14; i++) {
+        const dateKey = getDateKey(i);
+        const stats = analyzeCheckboxes(`brainhack-${dateKey}`);
+        
+        const historyCard = document.createElement('div');
+        historyCard.className = 'history-card';
+        historyCard.setAttribute('data-date', dateKey);
+        
+        const dateDisplay = document.createElement('div');
+        dateDisplay.className = 'history-date';
+        dateDisplay.textContent = formatDateDisplay(dateKey);
+        
+        const completion = document.createElement('div');
+        completion.className = 'history-completion';
+        completion.textContent = `${stats.completion}%`;
+        
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+        
+        const progressFill = document.createElement('div');
+        progressFill.className = 'progress-fill';
+        progressFill.style.width = `${stats.completion}%`;
+        
+        progressBar.appendChild(progressFill);
+        
+        historyCard.appendChild(dateDisplay);
+        historyCard.appendChild(completion);
+        historyCard.appendChild(progressBar);
+        
+        // クリックで対応する日付のBrain Hackerページに移動
+        historyCard.addEventListener('click', () => {
+          // TODO: 将来的には日付パラメータを渡して特定の日付のページに移動
+          window.location.href = 'index.html';
+        });
+        
+        historyContainer.appendChild(historyCard);
+      }
+    }
+    
+    // 共有リンク生成ボタンの処理
+    document.getElementById('generate-share-link').addEventListener('click', () => {
+      alert('この機能は現在開発中です。将来的には、あなたのタスク達成状況を他のユーザーと共有できるようになります。');
+    });
+    
+    // Add User ボタンの処理
+    document.querySelector('.add-user-btn').addEventListener('click', () => {
+      const userName = prompt('Enter the share link or user name:');
+      if (!userName) return;
+      
+      alert(`User "${userName}" will be added when sharing functionality is implemented.`);
+    });
+    
+    // ページロード時に自分（you）のデータを読み込む
+    loadUserData('you');
   </script>
 </body>
 </html>
-
