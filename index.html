@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -30,7 +29,7 @@
       color: #333;
     }
     
-    .top-right-btn {
+    .button {
       padding: 8px 15px;
       background-color: #4285f4;
       color: white;
@@ -41,10 +40,14 @@
       cursor: pointer;
     }
     
+    .button:hover {
+      background-color: #3367d6;
+    }
+    
     #dateDisplay {
       font-weight: bold;
       font-size: 1.2em;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
     
     .title-input {
@@ -54,8 +57,8 @@
       color: black;
       outline: none;
       text-align: center;
-      margin-bottom: 15px;
       background-color: transparent;
+      margin-bottom: 15px;
     }
     
     .title-input::placeholder {
@@ -65,11 +68,11 @@
     .controls {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       margin-bottom: 15px;
       background-color: white;
-      padding: 15px;
-      border-radius: 8px;
+      padding: 10px;
+      border-radius: 5px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
     
@@ -82,12 +85,12 @@
       gap: 1px;
       border: 1px solid #ccc;
       background-color: white;
-      border-radius: 8px;
+      border-radius: 5px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
     
     .cell {
-      border: 1px solid #ddd;
+      border: 1px solid #aaa;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -125,17 +128,16 @@
     }
     
     button {
-      padding: 6px 10px;
-      font-size: 13px;
+      padding: 4px 8px;
+      font-size: 12px;
       cursor: pointer;
-      background-color: #f1f1f1;
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
       border-radius: 4px;
-      transition: background-color 0.2s;
+      background-color: #f0f0f0;
     }
     
     button:hover {
-      background-color: #e5e5e5;
+      background-color: #e0e0e0;
     }
     
     .color-btn {
@@ -148,69 +150,43 @@
     .size-btn {
       width: 32px;
       height: 32px;
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
       border-radius: 4px;
-      background-color: #f9f9f9;
+      background-color: #f0f0f0;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     
-    .share-container {
-      margin-top: 20px;
-      text-align: center;
-    }
-    
-    .share-btn {
-      padding: 10px 20px;
-      background-color: #4285f4;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s;
-    }
-    
-    .share-btn:hover {
-      background-color: #3367d6;
-    }
-    
-    .share-dialog {
+    /* シェアモーダルのスタイル */
+    .modal {
       display: none;
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80%;
-      max-width: 500px;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-content {
       background-color: white;
       padding: 20px;
       border-radius: 8px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      z-index: 1000;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
     
-    .dialog-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-    
-    .dialog-title {
-      font-size: 1.2em;
-      font-weight: bold;
-      margin: 0;
-    }
-    
-    .close-btn {
-      background: none;
-      border: none;
-      font-size: 1.5em;
-      cursor: pointer;
-      padding: 0;
+    .modal-title {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
     }
     
     .share-link-container {
@@ -218,32 +194,38 @@
     }
     
     .share-link {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
+      display: flex;
       margin-bottom: 10px;
     }
     
+    .share-input {
+      flex-grow: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
     .copy-btn {
-      padding: 8px 15px;
+      margin-left: 8px;
+      padding: 8px 12px;
       background-color: #4285f4;
       color: white;
       border: none;
-      border-radius: 5px;
-      cursor: pointer;
+      border-radius: 4px;
     }
     
-    .overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 900;
+    .close-btn {
+      padding: 8px 12px;
+      background-color: #f1f1f1;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      float: right;
+    }
+    
+    .buttons-container {
+      display: flex;
+      justify-content: space-between;
     }
   </style>
 </head>
@@ -251,7 +233,10 @@
   <div class="container">
     <div class="header">
       <h1>Brain Hacker Home</h1>
-      <a href="record.html" class="top-right-btn">Record</a>
+      <div>
+        <button id="shareBtn" class="button">Share</button>
+        <a href="record.html" class="button">Record</a>
+      </div>
     </div>
     
     <div id="dateDisplay"></div>
@@ -285,25 +270,26 @@
     </div>
     
     <div class="grid-container" id="grid"></div>
-    
-    <div class="share-container">
-      <button class="share-btn" id="shareBtn">Generate Share Link</button>
-    </div>
   </div>
   
-  <!-- Share Dialog -->
-  <div class="overlay" id="overlay"></div>
-  <div class="share-dialog" id="shareDialog">
-    <div class="dialog-header">
-      <h3 class="dialog-title">Share Your Brain Hacker</h3>
-      <button class="close-btn" id="closeDialog">&times;</button>
+  <!-- シェアモーダル -->
+  <div id="shareModal" class="modal">
+    <div class="modal-content">
+      <h3 class="modal-title">Share Your Brain Hacker</h3>
+      <p>Share this link with others to let them view your Brain Hacker Record:</p>
+      
+      <div class="share-link-container">
+        <div class="share-link">
+          <input type="text" id="shareLink" class="share-input" readonly>
+          <button id="copyBtn" class="copy-btn">Copy</button>
+        </div>
+      </div>
+      
+      <div class="buttons-container">
+        <button id="generateNewBtn" class="button">Generate New Link</button>
+        <button id="closeShareBtn" class="close-btn">Close</button>
+      </div>
     </div>
-    <p>Share this link with others to let them see your Brain Hacker records:</p>
-    <div class="share-link-container">
-      <input type="text" class="share-link" id="shareLink" readonly>
-      <button class="copy-btn" id="copyBtn">Copy Link</button>
-    </div>
-    <p><small>Note: Anyone with this link can view your task progress in their Record tab.</small></p>
   </div>
 
 <script>
@@ -728,4 +714,23 @@ document.getElementById("resetBtn").addEventListener("click", () => {
       cell.style.backgroundColor = "";
       cell.style.display = "flex";
       cell.style.gridRow = "";
-      cell.style
+      cell.style.gridColumn = "";
+      img.src = "";
+      img.style.display = "none";
+    });
+    saveState();
+    localStorage.removeItem(`brainhack-${getTodayKey()}`);
+    // タイトルは削除しない
+    location.reload();
+  }
+});
+
+// === シェア機能 ===
+// シェアリンク用のユニークIDを生成
+function generateUniqueId() {
+  return 'share_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+// シェアリンクの保存と取得
+function getShareLink() {
+  let shareId = localStorage.get
