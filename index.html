@@ -381,11 +381,24 @@ function restoreState() {
       parsed.forEach(c => {
         const temp = document.createElement("div");
         temp.innerHTML = c.html;
+        
+        // 太字のチェックボックス項目を削除
         const filtered = [...temp.childNodes].filter(node => {
           const cb = node.querySelector?.("input[type='checkbox']");
           const sp = node.querySelector?.("span");
           return !(cb && sp?.style.fontWeight === "bold");
         });
+        
+        // 通常のチェックボックスのチェックと取り消し線をリセット
+        filtered.forEach(node => {
+          const cb = node.querySelector?.("input[type='checkbox']");
+          const sp = node.querySelector?.("span");
+          if (cb && sp && !sp.style.fontWeight.includes("bold")) {
+            cb.removeAttribute("checked");
+            sp.style.textDecoration = "none";
+          }
+        });
+        
         const wrapper = document.createElement("div");
         filtered.forEach(n => wrapper.appendChild(n.cloneNode(true)));
         c.html = wrapper.innerHTML;
@@ -393,7 +406,7 @@ function restoreState() {
       state = JSON.stringify(parsed);
     }
   }
-  if (!state) return;
+ if (!state) return;
   const parsed = JSON.parse(state);
   parsed.forEach(data => {
     const cell = document.querySelector(`.cell[data-row='${data.row}'][data-col='${data.col}']`);
