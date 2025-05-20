@@ -636,780 +636,27 @@
         historyContainer.appendChild(historyCard);
       }
     }
-
-    // グローバル変数として共有ユーザーデータを管理
-    const sharedUsers = {};
-
-    // Add User ボタンの処理
-document.querySelector('.add-user-btn').addEventListener('click', () => {
-  const userName = prompt('Enter the share link:');
-  if (!userName) return;
-  
-  alert(`User "${userName}" will be added when sharing functionality is implemented.`);
-});
-
-    // 新しいユーザータブを作成
-    function createUserTab(userName) {
-      const tabsContainer = document.getElementById('user-tabs');
-      const addUserBtn = document.querySelector('.add-user-btn');
-      
-      // 既存のタブを削除（同じ名前のタブがある場合）
-      const existingTab = document.querySelector(`.tab[data-user="${userName}"]`);
-      if (existingTab) existingTab.remove();
-      
-      // 新しいタブを作成
-      const newTab = document.createElement('div');
-      newTab.className = 'tab';
-      newTab.dataset.user = userName;
-      newTab.textContent = userName;
-      
-      // Add Userボタンの前にタブを挿入
-      tabsContainer.insertBefore(newTab, addUserBtn);
-      
-      // タブクリックイベントを設定
-      newTab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        newTab.classList.add('active');
-        
-        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-        document.getElementById(`tab-${userName}`).classList.add('active');
-        
-        // データロード（必要に応じて）
-        loadSharedUserData(userName);
-      });
-    }
-
-    // 新しいユーザーコンテンツを作成
-    function createUserContent(userName) {
-      const container = document.querySelector('.container');
-      
-      // 既存のコンテンツを削除（同じ名前のものがある場合）
-      const existingContent = document.getElementById(`tab-${userName}`);
-      if (existingContent) existingContent.remove();
-      
-      // 新しいコンテンツ作成
-      const newContent = document.createElement('div');
-      newContent.className = 'tab-content';
-      newContent.id = `tab-${userName}`;
-      
-      // テンプレートコンテンツを作成
-      newContent.innerHTML = `
-        <div class="stats-container">
-          <div class="stat-card">
-            <h3>${userName}'s Completion</h3>
-            <div class="stat-value" id="${userName}-completion">0%</div>
-            <div class="progress-bar">
-              <div class="progress-fill" id="${userName}-progress" style="width: 0%"></div>
-            </div>
-            <div id="${userName}-detail">0/0 tasks completed</div>
-          </div>
-        </div>
-        
-        <div class="streak-container">
-          <div class="streak-title">${userName}'s Continuous Streaks</div>
-          <div class="streak-items" id="${userName}-streaks">
-            <!-- ストリークアイテムがここに動的に追加されます -->
-          </div>
-        </div>
-        
-        <div class="history-container">
-          <div class="history-title">${userName}'s Data</div>
-          <div class="history-cards" id="${userName}-history">
-            <!-- 履歴カードがここに動的に追加されます -->
-          </div>
-        </div>
-      `;
-      
-      container.appendChild(newContent);
-    }
-
-    // 共有ユーザーデータを表示
-    function loadSharedUserData(userName) {
-      const userData = sharedUsers[userName];
-      if (!userData) return;
-      
-      // チェックボックスデータ解析
-      const checkboxStats = analyzeSharedCheckboxes(userData.data);
-      
-      // 完了率表示
-      document.getElementById(`${userName}-completion`).textContent = `${checkboxStats.completion}%`;
-      document.getElementById(`${userName}-progress`).style.width = `${checkboxStats.completion}%`;
-      document.getElementById(`${userName}-detail`).textContent = 
-        `${checkboxStats.completed}/${checkboxStats.total} tasks completed (${userData.date})`;
-      
-      // 履歴カード更新
-      const historyContainer = document.getElementById(`${userName}-history`);
-      historyContainer.innerHTML = '';
-      
-      const historyCard = document.createElement('div');
-      historyCard.className = 'history-card';
-      
-      const dateDisplay = document.createElement('div');
-      dateDisplay.className = 'history-date';
-      dateDisplay.textContent = formatDateDisplay(userData.date);
-      
-      const titleDisplay = document.createElement('div');
-      titleDisplay.textContent = userData.title;
-      titleDisplay.style.fontSize = '0.8em';
-      titleDisplay.style.margin = '5px 0';
-      
-      const completion = document.createElement('div');
-      completion.className = 'history-completion';
-      completion.textContent = `${checkboxStats.completion}%`;
-      
-      const progressBar = document.createElement('div');
-      progressBar.className = 'progress-bar';
-      
-      const progressFill = document.createElement('div');
-      progressFill.className = 'progress-fill';
-      progressFill.style.width = `${checkboxStats.completion}%`;
-      
-      progressBar.appendChil<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Brain Hacker - Record</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 20px;
-      font-family: sans-serif;
-      background-color: #f5f5f5;
-    }
     
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    
-    .header h1 {
-      margin: 0;
-      color: #333;
-    }
-    
-    .home-btn {
-      padding: 8px 15px;
-      background-color: #4285f4;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      text-decoration: none;
-      font-size: 14px;
-    }
-    
-    .tabs {
-      display: flex;
-      border-bottom: 1px solid #ccc;
-      margin-bottom: 20px;
-    }
-    
-    .tab {
-      padding: 10px 20px;
-      cursor: pointer;
-      border: 1px solid transparent;
-      border-bottom: none;
-      margin-right: 5px;
-      border-radius: 5px 5px 0 0;
-    }
-    
-    .tab.active {
-      background-color: white;
-      border-color: #ccc;
-      color: #4285f4;
-      font-weight: bold;
-    }
-    
-    .tab:hover:not(.active) {
-      background-color: #e9e9e9;
-    }
-    
-    .tab-content {
-      display: none;
-      background-color: white;
-      padding: 20px;
-      border-radius: 5px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-    
-    .tab-content.active {
-      display: block;
-    }
-    
-    .stats-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-    
-    .stat-card {
-      background-color: white;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    .stat-card h3 {
-      margin-top: 0;
-      color: #333;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 10px;
-    }
-    
-    .stat-value {
-      font-size: 2.5em;
-      font-weight: bold;
-      color: #4285f4;
-      margin: 10px 0;
-    }
-    
-    .streak-container {
-      margin-bottom: 30px;
-    }
-    
-    .streak-title {
-      font-size: 1.2em;
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: #333;
-    }
-    
-    .streak-items {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 15px;
-    }
-    
-    .streak-item {
-      padding: 15px;
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-    
-    .streak-item-title {
-      margin-top: 0;
-      font-size: 1em;
-      display: flex;
-      align-items: center;
-    }
-    
-    .streak-count {
-      display: inline-block;
-      margin-left: 10px;
-      padding: 3px 8px;
-      background-color: #4285f4;
-      color: white;
-      border-radius: 12px;
-      font-size: 0.85em;
-    }
-    
-    .history-container {
-      margin-bottom: 30px;
-    }
-    
-    .history-title {
-      font-size: 1.2em;
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: #333;
-    }
-    
-    .history-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 15px;
-    }
-    
-    .history-card {
-      padding: 15px;
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    
-    .history-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-    
-    .history-date {
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-    
-    .history-completion {
-      font-size: 1.2em;
-      color: #4285f4;
-      margin: 10px 0;
-    }
-    
-    .progress-bar {
-      height: 8px;
-      background-color: #e9e9e9;
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 10px;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background-color: #4285f4;
-      border-radius: 4px;
-    }
-    
-    .share-container {
-      margin-top: 30px;
-      text-align: center;
-    }
-    
-    .share-btn {
-      padding: 10px 20px;
-      background-color: #4285f4;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s;
-    }
-    
-    .share-btn:hover {
-      background-color: #3367d6;
-    }
-    
-    .add-user-btn {
-      padding: 6px 12px;
-      background-color: #f1f1f1;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      font-size: 14px;
-    }
-    
-    .add-user-btn i {
-      margin-right: 5px;
-    }
-    
-    .no-data {
-      text-align: center;
-      padding: 40px 0;
-      color: #999;
-      font-style: italic;
-    }
-    
-    /* プラスボタン用のスタイル */
-    .plus-icon {
-      font-size: 1.2em;
-      margin-right: 5px;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>Brain Hacker Record</h1>
-      <a href="index.html" class="home-btn">Home</a>
-    </div>
-    
-    <div class="tabs" id="user-tabs">
-      <div class="tab active" data-user="you">you</div>
-      <div class="tab" data-user="userA">userA</div>
-      <div class="tab" data-user="userB">userB</div>
-      <button class="add-user-btn"><span class="plus-icon">+</span> Add User</button>
-    </div>
-    
-    <div class="tab-content active" id="tab-you">
-      <div class="stats-container">
-        <div class="stat-card">
-          <h3>Today's Completion</h3>
-          <div class="stat-value" id="today-completion">0%</div>
-          <div class="progress-bar">
-            <div class="progress-fill" id="today-progress" style="width: 0%"></div>
-          </div>
-          <div id="today-detail">0/0 tasks completed</div>
-        </div>
-        
-        <div class="stat-card">
-          <h3>Yesterday's Completion</h3>
-          <div class="stat-value" id="yesterday-completion">0%</div>
-          <div class="progress-bar">
-            <div class="progress-fill" id="yesterday-progress" style="width: 0%"></div>
-          </div>
-          <div id="yesterday-detail">0/0 tasks completed</div>
-        </div>
-        
-        <div class="stat-card">
-          <h3>7-Day Average</h3>
-          <div class="stat-value" id="weekly-average">0%</div>
-          <div class="progress-bar">
-            <div class="progress-fill" id="weekly-progress" style="width: 0%"></div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="streak-container">
-        <div class="streak-title">Continuous Streaks</div>
-        <div class="streak-items" id="streak-items">
-          <!-- ストリークアイテムがここに動的に追加されます -->
-        </div>
-      </div>
-      
-      <div class="history-container">
-        <div class="history-title">History</div>
-        <div class="history-cards" id="history-cards">
-          <!-- 履歴カードがここに動的に追加されます -->
-        </div>
-      </div>
-      
-      <div class="share-container">
-        <button class="share-btn" id="generate-share-link">Generate Share Link</button>
-      </div>
-    </div>
-    
-    <div class="tab-content" id="tab-userA">
-      <div class="no-data">
-        No shared data available yet. When userA shares their data, it will appear here.
-      </div>
-    </div>
-    
-    <div class="tab-content" id="tab-userB">
-      <div class="no-data">
-        No shared data available yet. When userB shares their data, it will appear here.
-      </div>
-    </div>
-  </div>
-  
-  <script>
-    // タブ切り替え機能
-    const tabs = document.querySelectorAll('.tab');
-    const tabContents = document.querySelectorAll('.tab-content');
-    
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        // アクティブなタブを切り替え
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        
-        // タブコンテンツの表示切り替え
-        const user = tab.dataset.user;
-        tabContents.forEach(content => content.classList.remove('active'));
-        document.getElementById(`tab-${user}`).classList.add('active');
-        
-        // ユーザーのデータを読み込み（初回表示時のみ）
-        if (user === 'you' && !document.getElementById('streak-items').children.length) {
-          loadUserData('you');
-        }
-      });
+    // 共有リンク生成ボタンの処理
+    document.getElementById('generate-share-link').addEventListener('click', () => {
+      alert('この機能は現在開発中です。将来的には、あなたのタスク達成状況を他のユーザーと共有できるようになります。');
     });
     
-    // 日付操作ユーティリティ関数
-    function getTodayKey() {
-      const now = new Date();
-      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    }
-    
-    function getDateKey(daysAgo) {
-      const date = new Date();
-      date.setDate(date.getDate() - daysAgo);
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    }
-    
-    function formatDateDisplay(dateKey) {
-      const [year, month, day] = dateKey.split('-');
-      const date = new Date(year, month - 1, day);
-      const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
-      return `${month}/${day} (${weekday})`;
-    }
-    
-    // ユーザーデータを読み込む
-    function loadUserData(user) {
-      if (user === 'you') {
-        loadTodayStats();
-        loadYesterdayStats();
-        loadWeeklyAverage();
-        loadStreaks();
-        loadHistory();
-      }
-    }
-    
-    // 保存データからチェックボックスの状態を解析
-    function analyzeCheckboxes(dataKey) {
-      const data = localStorage.getItem(dataKey);
-      if (!data) return { total: 0, completed: 0, completion: 0 };
-      
-      try {
-        const parsedData = JSON.parse(data);
-        let totalCheckboxes = 0;
-        let completedCheckboxes = 0;
-        
-        parsedData.forEach(cellData => {
-          if (!cellData.html) return;
-          
-          // HTML内のチェックボックスを解析するための一時的な要素
-          const tempDiv = document.createElement('div');
-          tempDiv.innerHTML = cellData.html;
-          
-          // チェックボックスを検索
-          const checkboxes = tempDiv.querySelectorAll('input[type="checkbox"]');
-          totalCheckboxes += checkboxes.length;
-          
-          // チェック済みのボックスをカウント
-          checkboxes.forEach(checkbox => {
-            if (checkbox.hasAttribute('checked')) {
-              completedCheckboxes++;
-            }
-          });
-        });
-        
-        const completionRate = totalCheckboxes > 0 ? Math.round((completedCheckboxes / totalCheckboxes) * 100) : 0;
-        
-        return {
-          total: totalCheckboxes,
-          completed: completedCheckboxes,
-          completion: completionRate
-        };
-      } catch (error) {
-        console.error('Error parsing data:', error);
-        return { total: 0, completed: 0, completion: 0 };
-      }
-    }
-    
-    // 固定タスク（同じ内容のチェックボックス）を特定し、連続達成状況を分析
-    function analyzeStreaks() {
-      // 過去30日間のデータを分析
-      const taskTexts = new Map(); // タスクテキスト => [連続日数, 最終日]
-      const taskHistory = new Map(); // タスクテキスト => Set(完了した日付)
-      
-      // 過去30日間のデータを順に処理
-      for (let i = 0; i < 30; i++) {
-        const dateKey = getDateKey(i);
-        const dataKey = `brainhack-${dateKey}`;
-        const data = localStorage.getItem(dataKey);
-        if (!data) continue;
-        
-        try {
-          const parsedData = JSON.parse(data);
-          
-          parsedData.forEach(cellData => {
-            if (!cellData.html) return;
-            
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = cellData.html;
-            
-            // チェックボックス要素を探す
-            const checkboxSpans = tempDiv.querySelectorAll('span');
-            checkboxSpans.forEach(span => {
-              const checkbox = span.querySelector('input[type="checkbox"]');
-              const textSpan = span.querySelector('span');
-              
-              if (checkbox && textSpan && textSpan.textContent.trim()) {
-                const taskText = textSpan.textContent.trim();
-                
-                // タスクの履歴を記録
-                if (!taskHistory.has(taskText)) {
-                  taskHistory.set(taskText, new Set());
-                }
-                
-                // チェック済みならその日付を記録
-                if (checkbox.hasAttribute('checked')) {
-                  taskHistory.get(taskText).add(dateKey);
-                }
-              }
-            });
-          });
-        } catch (error) {
-          console.error(`Error parsing data for ${dateKey}:`, error);
-        }
-      }
-      
-      // 連続日数を計算
-      const today = getTodayKey();
-      const streaks = [];
-      
-      taskHistory.forEach((dates, taskText) => {
-        // 少なくとも3回以上出現したタスクのみ分析対象とする
-        if (dates.size < 3) return;
-        
-        let currentStreak = 0;
-        let maxStreak = 0;
-        let active = true;
-        
-        // 今日から過去に遡って連続日数を確認
-        for (let i = 0; i < 30; i++) {
-          const dateKey = getDateKey(i);
-          
-          if (dates.has(dateKey)) {
-            currentStreak++;
-          } else {
-            if (i === 0) active = false; // 今日完了していなければアクティブではない
-            break;
-          }
-        }
-        
-        // 結果を記録
-        streaks.push({
-          task: taskText,
-          streak: currentStreak,
-          active: active
-        });
-      });
-      
-      // 連続日数の長い順にソート
-      return streaks.sort((a, b) => b.streak - a.streak);
-    }
-    
-    // 今日のタスク完了状況を表示
-    function loadTodayStats() {
-      const todayKey = getTodayKey();
-      const stats = analyzeCheckboxes(`brainhack-${todayKey}`);
-      
-      document.getElementById('today-completion').textContent = `${stats.completion}%`;
-      document.getElementById('today-progress').style.width = `${stats.completion}%`;
-      document.getElementById('today-detail').textContent = `${stats.completed}/${stats.total} tasks completed`;
-    }
-    
-    // 昨日のタスク完了状況を表示
-    function loadYesterdayStats() {
-      const yesterdayKey = getDateKey(1);
-      const stats = analyzeCheckboxes(`brainhack-${yesterdayKey}`);
-      
-      document.getElementById('yesterday-completion').textContent = `${stats.completion}%`;
-      document.getElementById('yesterday-progress').style.width = `${stats.completion}%`;
-      document.getElementById('yesterday-detail').textContent = `${stats.completed}/${stats.total} tasks completed`;
-    }
-    
-    // 過去7日間の平均完了率を計算
-    function loadWeeklyAverage() {
-      let totalCompletion = 0;
-      let daysWithData = 0;
-      
-      for (let i = 0; i < 7; i++) {
-        const dateKey = getDateKey(i);
-        const stats = analyzeCheckboxes(`brainhack-${dateKey}`);
-        
-        if (stats.total > 0) {
-          totalCompletion += stats.completion;
-          daysWithData++;
-        }
-      }
-      
-      const average = daysWithData > 0 ? Math.round(totalCompletion / daysWithData) : 0;
-      document.getElementById('weekly-average').textContent = `${average}%`;
-      document.getElementById('weekly-progress').style.width = `${average}%`;
-    }
-    
-    // 連続達成ストリークを表示
-    function loadStreaks() {
-      const streaks = analyzeStreaks();
-      const streakContainer = document.getElementById('streak-items');
-      streakContainer.innerHTML = '';
-      
-      if (streaks.length === 0) {
-        streakContainer.innerHTML = '<div class="no-data">No continuous streaks found yet. Complete the same tasks daily to build streaks.</div>';
-        return;
-      }
-      
-      // 最大10個まで表示
-      const displayStreaks = streaks.slice(0, 10);
-      
-      displayStreaks.forEach(streak => {
-        const streakItem = document.createElement('div');
-        streakItem.className = 'streak-item';
-        
-        const title = document.createElement('h4');
-        title.className = 'streak-item-title';
-        title.textContent = streak.task;
-        
-        const count = document.createElement('span');
-        count.className = 'streak-count';
-        count.textContent = `${streak.streak} days`;
-        
-        title.appendChild(count);
-        streakItem.appendChild(title);
-        
-        const progressBar = document.createElement('div');
-        progressBar.className = 'progress-bar';
-        
-        const progressFill = document.createElement('div');
-        progressFill.className = 'progress-fill';
-        // 最大30日として表示
-        const progressWidth = Math.min(100, (streak.streak / 30) * 100);
-        progressFill.style.width = `${progressWidth}%`;
-        progressFill.style.backgroundColor = streak.active ? '#4caf50' : '#ff9800';
-        
-        progressBar.appendChild(progressFill);
-        streakItem.appendChild(progressBar);
-        
-        streakContainer.appendChild(streakItem);
-      });
-    }
-    
-    // 過去の履歴を表示
-    function loadHistory() {
-      const historyContainer = document.getElementById('history-cards');
-      historyContainer.innerHTML = '';
-      
-      // 過去14日間の履歴を表示
-      for (let i = 0; i < 14; i++) {
-        const dateKey = getDateKey(i);
-        const stats = analyzeCheckboxes(`brainhack-${dateKey}`);
-        
-        const historyCard = document.createElement('div');
-        historyCard.className = 'history-card';
-        historyCard.setAttribute('data-date', dateKey);
-        
-        const dateDisplay = document.createElement('div');
-        dateDisplay.className = 'history-date';
-        dateDisplay.textContent = formatDateDisplay(dateKey);
-        
-        const completion = document.createElement('div');
-        completion.className = 'history-completion';
-        completion.textContent = `${stats.completion}%`;
-        
-        const progressBar = document.createElement('div');
-        progressBar.className = 'progress-bar';
-        
-        const progressFill = document.createElement('div');
-        progressFill.className = 'progress-fill';
-        progressFill.style.width = `${stats.completion}%`;
-        
-        progressBar.appendChild(progressFill);
-        
-        historyCard.appendChild(dateDisplay);
-        historyCard.appendChild(completion);
-        historyCard.appendChild(progressBar);
-        
-        // クリックで対応する日付のBrain Hackerページに移動
-        historyCard.addEventListener('click', () => {
-          // TODO: 将来的には日付パラメータを渡して特定の日付のページに移動
-          window.location.href = 'index.html';
-        });
-        
-        historyContainer.appendChild(historyCard);
-      }
-    }
-
-    // グローバル変数として共有ユーザーデータを管理
-    const sharedUsers = {};
-
     // Add User ボタンの処理
+    document.querySelector('.add-user-btn').addEventListener('click', () => {
+      const userName = prompt('Enter the share link or user name:');
+      if (!userName) return;
+      
+      alert(`User "${userName}" will be added when sharing functionality is implemented.`);
+    });
+    
+
+// グローバル変数として共有ユーザーデータを管理
+const sharedUsers = {};
+
 // Add User ボタンの処理を更新
 document.querySelector('.add-user-btn').addEventListener('click', () => {
-  const shareLink = prompt('Enter the share link:');
+  const shareLink = prompt('Enter the share link from another user:');
   if (!shareLink) return;
   
   try {
@@ -1464,120 +711,231 @@ document.querySelector('.add-user-btn').addEventListener('click', () => {
   }
 });
 
-    // 新しいユーザータブを作成
-    function createUserTab(userName) {
-      const tabsContainer = document.getElementById('user-tabs');
-      const addUserBtn = document.querySelector('.add-user-btn');
-      
-      // 既存のタブを削除（同じ名前のタブがある場合）
-      const existingTab = document.querySelector(`.tab[data-user="${userName}"]`);
-      if (existingTab) existingTab.remove();
-      
-      // 新しいタブを作成
-      const newTab = document.createElement('div');
-      newTab.className = 'tab';
-      newTab.dataset.user = userName;
-      newTab.textContent = userName;
-      
-      // Add Userボタンの前にタブを挿入
-      tabsContainer.insertBefore(newTab, addUserBtn);
-      
-      // タブクリックイベントを設定
-      newTab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        newTab.classList.add('active');
-        
-        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-        document.getElementById(`tab-${userName}`).classList.add('active');
-        
-        // データロード（必要に応じて）
-        loadSharedUserData(userName);
-      });
-    }
+// 新しいユーザータブを作成
+function createUserTab(userName) {
+  const tabsContainer = document.getElementById('user-tabs');
+  const addUserBtn = document.querySelector('.add-user-btn');
+  
+  // 既存のタブを削除（同じ名前のタブがある場合）
+  const existingTab = document.querySelector(`.tab[data-user="${userName}"]`);
+  if (existingTab) existingTab.remove();
+  
+  // 新しいタブを作成
+  const newTab = document.createElement('div');
+  newTab.className = 'tab';
+  newTab.dataset.user = userName;
+  newTab.textContent = userName;
+  
+  // Add Userボタンの前にタブを挿入
+  tabsContainer.insertBefore(newTab, addUserBtn);
+  
+  // タブクリックイベントを設定
+  newTab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    newTab.classList.add('active');
+    
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    document.getElementById(`tab-${userName}`).classList.add('active');
+    
+    // データロード（必要に応じて）
+    loadSharedUserData(userName);
+  });
+}
 
-    // 新しいユーザーコンテンツを作成
-    function createUserContent(userName) {
-      const container = document.querySelector('.container');
-      
-      // 既存のコンテンツを削除（同じ名前のものがある場合）
-      const existingContent = document.getElementById(`tab-${userName}`);
-      if (existingContent) existingContent.remove();
-      
-      // 新しいコンテンツ作成
-      const newContent = document.createElement('div');
-      newContent.className = 'tab-content';
-      newContent.id = `tab-${userName}`;
-      
-      // テンプレートコンテンツを作成
-      newContent.innerHTML = `
-        <div class="stats-container">
-          <div class="stat-card">
-            <h3>${userName}'s Completion</h3>
-            <div class="stat-value" id="${userName}-completion">0%</div>
-            <div class="progress-bar">
-              <div class="progress-fill" id="${userName}-progress" style="width: 0%"></div>
-            </div>
-            <div id="${userName}-detail">0/0 tasks completed</div>
-          </div>
+// 新しいユーザーコンテンツを作成
+function createUserContent(userName) {
+  const container = document.querySelector('.container');
+  
+  // 既存のコンテンツを削除（同じ名前のものがある場合）
+  const existingContent = document.getElementById(`tab-${userName}`);
+  if (existingContent) existingContent.remove();
+  
+  // 新しいコンテンツ作成
+  const newContent = document.createElement('div');
+  newContent.className = 'tab-content';
+  newContent.id = `tab-${userName}`;
+  
+  // テンプレートコンテンツを作成
+  newContent.innerHTML = `
+    <div class="stats-container">
+      <div class="stat-card">
+        <h3>${userName}'s Completion</h3>
+        <div class="stat-value" id="${userName}-completion">0%</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="${userName}-progress" style="width: 0%"></div>
         </div>
-        
-        <div class="streak-container">
-          <div class="streak-title">${userName}'s Continuous Streaks</div>
-          <div class="streak-items" id="${userName}-streaks">
-            <!-- ストリークアイテムがここに動的に追加されます -->
-          </div>
-        </div>
-        
-        <div class="history-container">
-          <div class="history-title">${userName}'s Data</div>
-          <div class="history-cards" id="${userName}-history">
-            <!-- 履歴カードがここに動的に追加されます -->
-          </div>
-        </div>
-      `;
-      
-      container.appendChild(newContent);
-    }
+        <div id="${userName}-detail">0/0 tasks completed</div>
+      </div>
+    </div>
+    
+    <div class="streak-container">
+      <div class="streak-title">${userName}'s Continuous Streaks</div>
+      <div class="streak-items" id="${userName}-streaks">
+        <!-- ストリークアイテムがここに動的に追加されます -->
+      </div>
+    </div>
+    
+    <div class="history-container">
+      <div class="history-title">${userName}'s Data</div>
+      <div class="history-cards" id="${userName}-history">
+        <!-- 履歴カードがここに動的に追加されます -->
+      </div>
+    </div>
+  `;
+  
+  container.appendChild(newContent);
+}
 
-    // 共有ユーザーデータを表示
-    function loadSharedUserData(userName) {
-      const userData = sharedUsers[userName];
-      if (!userData) return;
-      
-      // チェックボックスデータ解析
-      const checkboxStats = analyzeSharedCheckboxes(userData.data);
-      
-      // 完了率表示
-      document.getElementById(`${userName}-completion`).textContent = `${checkboxStats.completion}%`;
-      document.getElementById(`${userName}-progress`).style.width = `${checkboxStats.completion}%`;
-      document.getElementById(`${userName}-detail`).textContent = 
-        `${checkboxStats.completed}/${checkboxStats.total} tasks completed (${userData.date})`;
-      
-      // 履歴カード更新
-      const historyContainer = document.getElementById(`${userName}-history`);
-      historyContainer.innerHTML = '';
-      
-      const historyCard = document.createElement('div');
-      historyCard.className = 'history-card';
-      
-      const dateDisplay = document.createElement('div');
-      dateDisplay.className = 'history-date';
-      dateDisplay.textContent = formatDateDisplay(userData.date);
-      
-      const titleDisplay = document.createElement('div');
-      titleDisplay.textContent = userData.title;
-      titleDisplay.style.fontSize = '0.8em';
-      titleDisplay.style.margin = '5px 0';
-      
-      const completion = document.createElement('div');
-      completion.className = 'history-completion';
-      completion.textContent = `${checkboxStats.completion}%`;
-      
-      const progressBar = document.createElement('div');
-      progressBar.className = 'progress-bar';
-      
-      const progressFill = document.createElement('div');
-      progressFill.className = 'progress-fill';
-      progressFill.style.width = `${checkboxStats.completion}%`;
-      
-      progressBar.appendChil
+// 共有ユーザーデータを表示
+function loadSharedUserData(userName) {
+  const userData = sharedUsers[userName];
+  if (!userData) return;
+  
+  // チェックボックスデータ解析
+  const checkboxStats = analyzeSharedCheckboxes(userData.data);
+  
+  // 完了率表示
+  document.getElementById(`${userName}-completion`).textContent = `${checkboxStats.completion}%`;
+  document.getElementById(`${userName}-progress`).style.width = `${checkboxStats.completion}%`;
+  document.getElementById(`${userName}-detail`).textContent = 
+    `${checkboxStats.completed}/${checkboxStats.total} tasks completed (${userData.date})`;
+  
+  // 履歴カード更新
+  const historyContainer = document.getElementById(`${userName}-history`);
+  historyContainer.innerHTML = '';
+  
+  const historyCard = document.createElement('div');
+  historyCard.className = 'history-card';
+  
+  const dateDisplay = document.createElement('div');
+  dateDisplay.className = 'history-date';
+  dateDisplay.textContent = formatDateDisplay(userData.date);
+  
+  const titleDisplay = document.createElement('div');
+  titleDisplay.textContent = userData.title;
+  titleDisplay.style.fontSize = '0.8em';
+  titleDisplay.style.margin = '5px 0';
+  
+  const completion = document.createElement('div');
+  completion.className = 'history-completion';
+  completion.textContent = `${checkboxStats.completion}%`;
+  
+  const progressBar = document.createElement('div');
+  progressBar.className = 'progress-bar';
+  
+  const progressFill = document.createElement('div');
+  progressFill.className = 'progress-fill';
+  progressFill.style.width = `${checkboxStats.completion}%`;
+  
+  progressBar.appendChild(progressFill);
+  
+  historyCard.appendChild(dateDisplay);
+  historyCard.appendChild(titleDisplay);
+  historyCard.appendChild(completion);
+  historyCard.appendChild(progressBar);
+  
+  historyContainer.appendChild(historyCard);
+}
+
+// 共有データからチェックボックスの状態を解析
+function analyzeSharedCheckboxes(data) {
+  let totalCheckboxes = 0;
+  let completedCheckboxes = 0;
+  
+  data.forEach(cellData => {
+    if (!cellData.html) return;
+    
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = cellData.html;
+    
+    const checkboxes = tempDiv.querySelectorAll('input[type="checkbox"]');
+    totalCheckboxes += checkboxes.length;
+    
+    checkboxes.forEach(checkbox => {
+      if (checkbox.hasAttribute('checked')) {
+        completedCheckboxes++;
+      }
+    });
+  });
+  
+  const completionRate = totalCheckboxes > 0 ? Math.round((completedCheckboxes / totalCheckboxes) * 100) : 0;
+  
+  return {
+    total: totalCheckboxes,
+    completed: completedCheckboxes,
+    completion: completionRate
+  };
+}
+
+// 保存済み共有ユーザーデータのロード（ページ読み込み時）
+function loadSavedSharedUsers() {
+  const savedUsers = localStorage.getItem('brainhack-shared-users');
+  if (!savedUsers) return;
+  
+  try {
+    const parsedUsers = JSON.parse(savedUsers);
+    
+    // グローバル変数に復元
+    Object.assign(sharedUsers, parsedUsers);
+    
+    // 各ユーザーのタブとコンテンツを作成
+    Object.keys(sharedUsers).forEach(userName => {
+      createUserTab(userName);
+      createUserContent(userName);
+    });
+    
+    // 既存のデフォルトタブ（userA, userB）を削除
+    const defaultTabs = ['userA', 'userB'];
+    defaultTabs.forEach(user => {
+      const tab = document.querySelector(`.tab[data-user="${user}"]`);
+      const content = document.getElementById(`tab-${user}`);
+      if (tab) tab.remove();
+      if (content) content.remove();
+    });
+    
+  } catch (err) {
+    console.error('Error loading saved shared users:', err);
+  }
+}
+
+// 生成共有リンク機能
+document.getElementById('generate-share-link').addEventListener('click', () => {
+  const todayKey = getTodayKey();
+  const data = localStorage.getItem(`brainhack-${todayKey}`);
+  if (!data) {
+    alert('No data available to share!');
+    return;
+  }
+  
+  // 共有データを作成
+  const shareData = {
+    title: localStorage.getItem("pageTitle") || "Brain Hacker",
+    date: todayKey,
+    data: JSON.parse(data)
+  };
+  
+  // Base64エンコードで共有リンクを生成
+  const shareLink = `${window.location.origin}/index.html?share=${btoa(JSON.stringify(shareData))}`;
+  
+  // シェアリンクをクリップボードにコピー
+  const tempInput = document.createElement('input');
+  tempInput.value = shareLink;
+  document.body.appendChild(tempInput);
+  tempInput.select();
+  document.execCommand('copy');
+  document.body.removeChild(tempInput);
+  
+  alert('Share link generated and copied to clipboard! Send this link to someone who wants to view your Brain Hacker data.');
+});
+
+// ページロード時に保存済み共有ユーザーをロード
+window.addEventListener('DOMContentLoaded', () => {
+  loadSavedSharedUsers();
+  loadUserData('you');
+});
+
+    // ページロード時に自分（you）のデータを読み込む
+    loadUserData('you');
+  </script>
+</body>
+</html>
