@@ -378,77 +378,39 @@ function restoreState() {
     const yState = localStorage.getItem(`brainhack-${getYesterdayKey()}`);
     if (yState) {
       const parsed = JSON.parse(yState);
-      const newParsed = parsed.map(cellData => {
-        // 元のデータを維持するためにディープコピーを作成
-        const newCellData = {...cellData};
-        
-        // セル内のHTMLを解析
+      parsed.forEach(c => {
         const temp = document.createElement("div");
-        temp.innerHTML = cellData.html || "";
-        
-        // 太字チェックボックス(☑️)を含むセルを特定
-        let hasBoldCheckbox = false;
-        temp.querySelectorAll("span").forEach(span => {
-          if (span.style.display === "inline-flex") {
-            const checkbox = span.querySelector("input[type='checkbox']");
-            const textSpan = span.querySelector("span");
-            if (checkbox && textSpan && textSpan.style.fontWeight === "bold") {
-              hasBoldCheckbox = true;
-            }
-          }
+        temp.innerHTML = c.html;
+        const filtered = [...temp.childNodes].filter(node => {
+          const cb = node.querySelector?.("input[type='checkbox']");
+          const sp = node.querySelector?.("span");
+          return !(cb && sp?.style.fontWeight === "bold");
         });
-        
-        if (hasBoldCheckbox) {
-          // 太字チェックボックス(☑️)を含むセルはクリア
-          newCellData.html = "";
-        } else {
-          // 通常のチェックボックス(✅)のチェックと取消線を外す
-          temp.querySelectorAll("span").forEach(span => {
-            if (span.style.display === "inline-flex") {
-              const checkbox = span.querySelector("input[type='checkbox']");
-              const textSpan = span.querySelector("span");
-              if (checkbox && textSpan && textSpan.style.fontWeight !== "bold") {
-                // チェック状態をリセット
-                checkbox.removeAttribute("checked");
-                if (textSpan) {
-                  textSpan.style.textDecoration = "none";
-                }
-              }
-            }
-          });
-          newCellData.html = temp.innerHTML;
-        }
-        
-        return newCellData;
+        const wrapper = document.createElement("div");
+        filtered.forEach(n => wrapper.appendChild(n.cloneNode(true)));
+        c.html = wrapper.innerHTML;
       });
-      
-      state = JSON.stringify(newParsed);
+      state = JSON.stringify(parsed);
     }
   }
-  
   if (!state) return;
-  
   const parsed = JSON.parse(state);
   parsed.forEach(data => {
     const cell = document.querySelector(`.cell[data-row='${data.row}'][data-col='${data.col}']`);
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
-    
     editable.innerHTML = typeof data.html === 'string' ? data.html : "";
     editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
       cb.checked = cb.hasAttribute("checked");
     });
-    
     editable.style.fontSize = data.fontSize;
     editable.style.alignItems = data.alignItems;
     editable.style.justifyContent = data.justifyContent;
     editable.style.textAlign = data.textAlign;
-    
     cell.style.backgroundColor = data.bgColor;
     cell.style.display = data.display;
     cell.style.gridRow = data.gridRow;
     cell.style.gridColumn = data.gridColumn;
-    
     if (data.imgSrc && data.imgSrc.startsWith("data:image/")) {
       img.src = data.imgSrc;
       img.style.display = 'block';
@@ -456,7 +418,6 @@ function restoreState() {
       img.src = "";
       img.style.display = 'none';
     }
-    
     editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
       cb.checked = cb.hasAttribute("checked");
       const sp = cb.nextElementSibling;
@@ -466,6 +427,21 @@ function restoreState() {
         saveState();
       });
     });
+  });
+}
+
+restoreState();
+window.addEventListener("beforeunload", saveState);
+// === 色変更機能 ===
+for (const btn of document.querySelectorAll(".color-btn")) {
+  btn.addEventListener("click", () => {
+    const color = btn.dataset.color;
+    for (const key of selectedCells) {
+      const [r, c] = key.split(',');
+      const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+      if (cell) cell.style.backgroundColor = color;
+    }
+    saveState();
   });
 }
 
@@ -644,153 +620,6 @@ document.getElementById("resetBtn").addEventListener("click", () => {
     location.reload();
   }
 });
-
-// === シェア機能 ===
-document.getElementById("shareBtn").addEventListener("click", () => {
-  try {
-    // 現在のデータを取得
-    const data = localStorage.getItem(`brainhack-${getTodayKey()}`);
-    if (!data) {
-      alert("共有するデータがありません！");
-      return;
-    }
-    
-    // タイトルを含めて共有データを作成
-    const shareData = {
-      title: document.getElementById("pageTitle").value,
-      date: getTodayKey(),
-      data: JSON.parse(data)
-    };
-    
-    // データを安全にエンコード (UTF-8対応)
-    const jsonString = JSON.stringify(shareData);
-    const encodedData = encodeURIComponent(jsonString);
-    
-    // シェアリンクを生成
-    const shareLink = `${window.location.origin}${window.location.pathname}?share=${encodedData}`;
-    
-    // シェアリンクをモーダルに表示
-    document.getElementById("shareLink").value = shareLink;
-    document.getElementById("shareModal").style.display = "block";
-    console.log("シェアリンク生成完了:", shareLink.substring(0, 100) + "...");
-  } catch (error) {
-    console.error("シェアリンク生成エラー:", error);
-    alert("シェアリンクの生成中にエラーが発生しました: " + error.message);
-  }
-});
-
-// モーダルの閉じるボタン
-document.querySelector(".close-btn").addEventListener("click", () => {
-  document.getElementById("shareModal").style.display = "none";
-});
-
-// Windowの外側をクリックしてモーダルを閉じる
-window.addEventListener("click", (e) => {
-  if (e.target == document.getElementById("shareModal")) {
-    document.getElementById("shareModal").style.display = "none";
-  }
-});
-
-// コピーボタンの機能
-document.getElementById("copyBtn").addEventListener("click", () => {
-  const shareLink = document.getElementById("shareLink");
-  try {
-    // モダンなクリップボード API を使用
-    navigator.clipboard.writeText(shareLink.value)
-      .then(() => {
-        alert("リンクをクリップボードにコピーしました！");
-      })
-      .catch(err => {
-        // フォールバック：従来の方法
-        shareLink.select();
-        document.execCommand("copy");
-        alert("リンクをクリップボードにコピーしました！");
-      });
-  } catch (err) {
-    console.error("コピーエラー:", err);
-    alert("コピーできませんでした。手動でコピーしてください。");
-  }
-});
-
-// URLパラメータから共有データをロード
-window.addEventListener("DOMContentLoaded", () => {
-  try {
-    const urlParams = new URLSearchParams(window.location.search);
-    const shareParam = urlParams.get("share");
-    
-    if (shareParam) {
-      console.log("共有データを検出しました。復元を試みます...");
-      
-      // データをデコード
-      const decodedJson = decodeURIComponent(shareParam);
-      const decodedData = JSON.parse(decodedJson);
-      
-      console.log("復元されたデータ:", decodedData.title, decodedData.date);
-      
-      // タイトルを設定
-      if (decodedData.title) {
-        document.getElementById("pageTitle").value = decodedData.title;
-        localStorage.setItem("pageTitle", decodedData.title);
-      }
-      
-      // グリッドデータを復元
-      if (decodedData.data && Array.isArray(decodedData.data)) {
-        // グリッドセルを復元
-        decodedData.data.forEach(data => {
-          const cell = document.querySelector(`.cell[data-row='${data.row}'][data-col='${data.col}']`);
-          if (!cell) return;
-          
-          const editable = cell.querySelector(".editable");
-          const img = cell.querySelector("img");
-          
-          editable.innerHTML = typeof data.html === 'string' ? data.html : "";
-          editable.style.fontSize = data.fontSize || "";
-          editable.style.alignItems = data.alignItems || "";
-          editable.style.justifyContent = data.justifyContent || "";
-          editable.style.textAlign = data.textAlign || "";
-          
-          cell.style.backgroundColor = data.bgColor || "";
-          cell.style.display = data.display || "flex";
-          cell.style.gridRow = data.gridRow || "";
-          cell.style.gridColumn = data.gridColumn || "";
-          
-          if (data.imgSrc && data.imgSrc.startsWith("data:image/")) {
-            img.src = data.imgSrc;
-            img.style.display = 'block';
-          } else {
-            img.src = "";
-            img.style.display = 'none';
-          }
-          
-          // チェックボックスの状態を復元
-          editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
-            cb.checked = cb.hasAttribute("checked");
-            const sp = cb.nextElementSibling;
-            if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
-            
-            // イベントリスナーを再設定
-            cb.addEventListener("change", () => {
-              if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
-              saveState();
-            });
-          });
-        });
-        
-        // 状態を保存
-        localStorage.setItem(`brainhack-${getTodayKey()}`, JSON.stringify(decodedData.data));
-      }
-      
-      // URLからパラメータを削除して履歴を整理
-      window.history.replaceState({}, document.title, window.location.pathname);
-      console.log("共有データの復元が完了しました");
-      
-    }
-  } catch (err) {
-    console.error("共有データの読み込みに失敗しました:", err);
-    alert("共有データの読み込みに失敗しました: " + err.message);
-  }
-});
-
 </script>
 </body>
 </html>
