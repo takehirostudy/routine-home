@@ -373,63 +373,82 @@ function saveState() {
 }
 
 function restoreState() {
-function restoreState() {
   let state = localStorage.getItem(`brainhack-${getTodayKey()}`);
   if (!state) {
     const yState = localStorage.getItem(`brainhack-${getYesterdayKey()}`);
     if (yState) {
       const parsed = JSON.parse(yState);
-      parsed.forEach(c => {
-        // 太字チェックボックス（☑️）を含むセルはクリア
-        const temp = document.createElement("div");
-        temp.innerHTML = c.html;
-        let hasBoldCheckbox = false;
+      const newParsed = parsed.map(cellData => {
+        // 元のデータを維持するためにディープコピーを作成
+        const newCellData = {...cellData};
         
+        // セル内のHTMLを解析
+        const temp = document.createElement("div");
+        temp.innerHTML = cellData.html || "";
+        
+        // 太字チェックボックス(☑️)を含むセルを特定
+        let hasBoldCheckbox = false;
         temp.querySelectorAll("span").forEach(span => {
-          const cb = span.querySelector("input[type='checkbox']");
-          const text = span.querySelector("span");
-          if (cb && text && text.style.fontWeight === "bold") {
-            hasBoldCheckbox = true;
+          if (span.style.display === "inline-flex") {
+            const checkbox = span.querySelector("input[type='checkbox']");
+            const textSpan = span.querySelector("span");
+            if (checkbox && textSpan && textSpan.style.fontWeight === "bold") {
+              hasBoldCheckbox = true;
+            }
           }
         });
         
         if (hasBoldCheckbox) {
-          // ☑️ チェックボックスを含むセルはクリア
-          c.html = "";
+          // 太字チェックボックス(☑️)を含むセルはクリア
+          newCellData.html = "";
         } else {
-          // それ以外のセルは処理
-          // 通常のチェックボックス（✅）からチェックと取消線を外す
-          temp.querySelectorAll("input[type='checkbox']").forEach(cb => {
-            cb.removeAttribute("checked");
-            const nextSpan = cb.nextElementSibling;
-            if (nextSpan) {
-              nextSpan.style.textDecoration = "none";
+          // 通常のチェックボックス(✅)のチェックと取消線を外す
+          temp.querySelectorAll("span").forEach(span => {
+            if (span.style.display === "inline-flex") {
+              const checkbox = span.querySelector("input[type='checkbox']");
+              const textSpan = span.querySelector("span");
+              if (checkbox && textSpan && textSpan.style.fontWeight !== "bold") {
+                // チェック状態をリセット
+                checkbox.removeAttribute("checked");
+                if (textSpan) {
+                  textSpan.style.textDecoration = "none";
+                }
+              }
             }
           });
-          c.html = temp.innerHTML;
+          newCellData.html = temp.innerHTML;
         }
+        
+        return newCellData;
       });
-      state = JSON.stringify(parsed);
+      
+      state = JSON.stringify(newParsed);
     }
   }
+  
   if (!state) return;
+  
   const parsed = JSON.parse(state);
   parsed.forEach(data => {
     const cell = document.querySelector(`.cell[data-row='${data.row}'][data-col='${data.col}']`);
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
+    
     editable.innerHTML = typeof data.html === 'string' ? data.html : "";
     editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
       cb.checked = cb.hasAttribute("checked");
     });
+    
     editable.style.fontSize = data.fontSize;
     editable.style.alignItems = data.alignItems;
     editable.style.justifyContent = data.justifyContent;
     editable.style.textAlign = data.textAlign;
+    
     cell.style.backgroundColor = data.bgColor;
     cell.style.display = data.display;
     cell.style.gridRow = data.gridRow;
     cell.style.gridColumn = data.gridColumn;
+    
     if (data.imgSrc && data.imgSrc.startsWith("data:image/")) {
       img.src = data.imgSrc;
       img.style.display = 'block';
@@ -437,6 +456,7 @@ function restoreState() {
       img.src = "";
       img.style.display = 'none';
     }
+    
     editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
       cb.checked = cb.hasAttribute("checked");
       const sp = cb.nextElementSibling;
