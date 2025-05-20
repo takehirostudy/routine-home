@@ -379,16 +379,34 @@ function restoreState() {
     if (yState) {
       const parsed = JSON.parse(yState);
       parsed.forEach(c => {
+        // 太字チェックボックス（☑️）を含むセルはクリア
         const temp = document.createElement("div");
         temp.innerHTML = c.html;
-        const filtered = [...temp.childNodes].filter(node => {
-          const cb = node.querySelector?.("input[type='checkbox']");
-          const sp = node.querySelector?.("span");
-          return !(cb && sp?.style.fontWeight === "bold");
+        let hasBoldCheckbox = false;
+        
+        temp.querySelectorAll("span").forEach(span => {
+          const cb = span.querySelector("input[type='checkbox']");
+          const text = span.querySelector("span");
+          if (cb && text && text.style.fontWeight === "bold") {
+            hasBoldCheckbox = true;
+          }
         });
-        const wrapper = document.createElement("div");
-        filtered.forEach(n => wrapper.appendChild(n.cloneNode(true)));
-        c.html = wrapper.innerHTML;
+        
+        if (hasBoldCheckbox) {
+          // ☑️ チェックボックスを含むセルはクリア
+          c.html = "";
+        } else {
+          // それ以外のセルは処理
+          // 通常のチェックボックス（✅）からチェックと取消線を外す
+          temp.querySelectorAll("input[type='checkbox']").forEach(cb => {
+            cb.removeAttribute("checked");
+            const nextSpan = cb.nextElementSibling;
+            if (nextSpan) {
+              nextSpan.style.textDecoration = "none";
+            }
+          });
+          c.html = temp.innerHTML;
+        }
       });
       state = JSON.stringify(parsed);
     }
@@ -429,22 +447,6 @@ function restoreState() {
     });
   });
 }
-
-restoreState();
-window.addEventListener("beforeunload", saveState);
-// === 色変更機能 ===
-for (const btn of document.querySelectorAll(".color-btn")) {
-  btn.addEventListener("click", () => {
-    const color = btn.dataset.color;
-    for (const key of selectedCells) {
-      const [r, c] = key.split(',');
-      const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
-      if (cell) cell.style.backgroundColor = color;
-    }
-    saveState();
-  });
-}
-
 // === 画像アップロード機能 ===
 document.getElementById("uploadImageBtn").addEventListener("click", () => {
   if (selectedCells.size !== 1) return alert("画像は1セルのみに添付可能です");
