@@ -633,93 +633,145 @@ document.getElementById("resetBtn").addEventListener("click", () => {
     location.reload();
   }
 });
-// === シェア機能 ===
-// モーダル操作
-const shareModal = document.getElementById("shareModal");
+// シェアモーダル関連の処理
 const shareBtn = document.getElementById("shareBtn");
-const closeBtn = document.querySelector(".close-btn");
+const shareModal = document.getElementById("shareModal");
+const shareLink = document.getElementById("shareLink");
 const copyBtn = document.getElementById("copyBtn");
-const shareLinkInput = document.getElementById("shareLink");
+const closeBtn = document.querySelector(".close-btn");
 
-// モーダル表示
+// シェアボタンをクリックしたときの処理
 shareBtn.addEventListener("click", () => {
-  // 現在のBrainHackerの状態を取得
-  const state = localStorage.getItem(`brainhack-${getTodayKey()}`);
-  const title = document.getElementById("pageTitle").value;
+  // 現在の状態をJSONに変換
+  const state = [...document.querySelectorAll(".cell")].map(cell => {
+    const editable = cell.querySelector(".editable");
+    const img = cell.querySelector("img");
+    editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
+      cb.checked ? cb.setAttribute("checked", "checked") : cb.removeAttribute("checked");
+    });
+    return {
+      row: cell.dataset.row,
+      col: cell.dataset.col,
+      html: editable.innerHTML,
+      fontSize: editable.style.fontSize,
+      bgColor: cell.style.backgroundColor,
+      display: cell.style.display,
+      gridRow: cell.style.gridRow,
+      gridColumn: cell.style.gridColumn,
+      imgSrc: (img.src && img.src !== "undefined" && img.src !== "null" && img.style.display !== 'none') ? img.src : "",
+      alignItems: editable.style.alignItems,
+      justifyContent: editable.style.justifyContent,
+      textAlign: editable.style.textAlign
+    };
+  });
   
-  // Base64エンコードして共有データを作成
-  const shareData = btoa(JSON.stringify({
-    title: title,
-    state: state,
-    date: getTodayKey()
-  }));
+  // タイトルも含める
+  const fullState = {
+    title: document.getElementById("pageTitle").value,
+    cells: state
+  };
   
-  // 共有URLを生成
-  const shareUrl = `${window.location.origin}${window.location.pathname}?share=${shareData}`;
+  // Base64エンコードして圧縮
+  const stateStr = JSON.stringify(fullState);
+  const compressedState = btoa(encodeURIComponent(stateStr));
   
-  // 入力フィールドに表示
-  shareLinkInput.value = shareUrl;
+  // URLに埋め込む
+  const url = new URL(window.location.href);
+  url.searchParams.set("data", compressedState);
+  
+  // モーダル内のテキストボックスに表示
+  shareLink.value = url.toString();
   
   // モーダルを表示
   shareModal.style.display = "block";
 });
 
-// モーダルを閉じる
+// コピーボタンの処理
+copyBtn.addEventListener("click", () => {
+  shareLink.select();
+  document.execCommand("copy");
+  copyBtn.textContent = "Copied!";
+  setTimeout(() => {
+    copyBtn.textContent = "Copy Link";
+  }, 2000);
+});
+
+// モーダルを閉じる処理
 closeBtn.addEventListener("click", () => {
   shareModal.style.display = "none";
 });
 
-// 外側クリックでもモーダルを閉じる
+// モーダル外をクリックしたときも閉じる
 window.addEventListener("click", (e) => {
   if (e.target === shareModal) {
     shareModal.style.display = "none";
   }
 });
 
-// リンクをコピー
-copyBtn.addEventListener("click", () => {
-  shareLinkInput.select();
-  document.execCommand("copy");
-  // 代替方法（execCommandが非推奨の場合）
-  // navigator.clipboard.writeText(shareLinkInput.value);
+// URLからデータを読み込む処理（ページ読み込み時）
+window.addEventListener("DOMContentLoaded", () => {
+  const url = new URL(window.location.href);
+  const data = url.searchParams.get("data");
   
-  // コピー完了メッセージ
-  const originalText = copyBtn.textContent;
-  copyBtn.textContent = "Copied!";
-  setTimeout(() => {
-    copyBtn.textContent = originalText;
-  }, 2000);
-});
-
-// 共有リンクからの読み込み
-function loadSharedData() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const shareData = urlParams.get("share");
-  
-  if (shareData) {
+  if (data) {
     try {
-      const decodedData = JSON.parse(atob(shareData));
+      // Base64デコードして解凍
+      const decompressedState = JSON.parse(decodeURIComponent(atob(data)));
       
-      if (decodedData.title) {
-        document.getElementById("pageTitle").value = decodedData.title;
-        localStorage.setItem("pageTitle", decodedData.title);
+      // タイトルを設定
+      if (decompressedState.title) {
+        document.getElementById("pageTitle").value = decompressedState.title;
+        localStorage.setItem("pageTitle", decompressedState.title);
       }
       
-      if (decodedData.state) {
-        localStorage.setItem(`brainhack-${getTodayKey()}`, decodedData.state);
-        restoreState();
+      // セルのデータを適用
+      if (decompressedState.cells && Array.isArray(decompressedState.cells)) {
+        decompressedState.cells.forEach(cellData => {
+          const cell = document.querySelector(`.cell[data-row='${cellData.row}'][data-col='${cellData.col}']`);
+          if (!cell) return;
+          
+          const editable = cell.querySelector(".editable");
+          const img = cell.querySelector("img");
+          
+          editable.innerHTML = typeof cellData.html === 'string' ? cellData.html : "";
+          editable.style.fontSize = cellData.fontSize;
+          editable.style.alignItems = cellData.alignItems;
+          editable.style.justifyContent = cellData.justifyContent;
+          editable.style.textAlign = cellData.textAlign;
+          
+          cell.style.backgroundColor = cellData.bgColor;
+          cell.style.display = cellData.display;
+          cell.style.gridRow = cellData.gridRow;
+          cell.style.gridColumn = cellData.gridColumn;
+          
+          if (cellData.imgSrc && cellData.imgSrc.startsWith("data:image/")) {
+            img.src = cellData.imgSrc;
+            img.style.display = 'block';
+          } else {
+            img.src = "";
+            img.style.display = 'none';
+          }
+          
+          // チェックボックスの状態を復元
+          editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
+            cb.checked = cb.hasAttribute("checked");
+            const sp = cb.nextElementSibling;
+            if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
+            cb.addEventListener("change", () => {
+              if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
+              saveState();
+            });
+          });
+        });
+        
+        // 共有されたデータを保存
+        saveState();
       }
-      
-      // パラメータをクリア（オプション）
-      // window.history.replaceState({}, document.title, window.location.pathname);
-    } catch (e) {
-      console.error("共有データの読み込みに失敗しました", e);
+    } catch (error) {
+      console.error("Error loading shared data:", error);
     }
   }
-}
-
-// ページ読み込み時に共有データを確認
-window.addEventListener("DOMContentLoaded", loadSharedData);
+});
 </script>
 </body>
 </html>
