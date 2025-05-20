@@ -621,98 +621,105 @@ document.getElementById("resetBtn").addEventListener("click", () => {
   }
 });
 
-// === データ共有機能 ===
-// シェアモーダル関連
-const shareModal = document.getElementById("shareModal");
-const shareBtn = document.getElementById("shareBtn");
-const closeBtn = document.querySelector(".close-btn");
-const copyBtn = document.getElementById("copyBtn");
-const shareLinkInput = document.getElementById("shareLink");
-
-// シェアモーダルを開く
-shareBtn.addEventListener("click", () => {
-  // ユーザーIDを生成または取得
-  let userId = localStorage.getItem("brainhack-user-id");
-  if (!userId) {
-    userId = generateUserId();
-    localStorage.setItem("brainhack-user-id", userId);
+// === シェア機能 ===
+document.getElementById("shareBtn").addEventListener("click", () => {
+  // 現在のデータを取得してJSONに変換
+  const data = localStorage.getItem(`brainhack-${getTodayKey()}`);
+  if (!data) {
+    alert("No data to share!");
+    return;
   }
   
-  // 過去30日間のデータを収集
-  const userData = collectUserData();
-  
-  // 共有データを作成
+  // タイトルを含めて共有データを作成
   const shareData = {
-    userId: userId,
-    username: pageTitle.value || "Brain Hacker User",
-    data: userData,
-    timestamp: new Date().toISOString()
+    title: document.getElementById("pageTitle").value,
+    date: getTodayKey(),
+    data: JSON.parse(data)
   };
   
-  // データをエンコード
-  const encodedData = btoa(JSON.stringify(shareData));
-  const shareLink = `${window.location.origin + window.location.pathname}?share=${encodedData}`;
+  // Base64エンコードで共有データを生成
+  const shareLink = `${window.location.origin}${window.location.pathname}?share=${btoa(JSON.stringify(shareData))}`;
   
-  // モーダルに表示
-  shareLinkInput.value = shareLink;
-  shareModal.style.display = "block";
+  // シェアリンクをモーダルに表示
+  document.getElementById("shareLink").value = shareLink;
+  document.getElementById("shareModal").style.display = "block";
 });
 
-// モーダルを閉じる
-closeBtn.addEventListener("click", () => {
-  shareModal.style.display = "none";
+// モーダルの閉じるボタン
+document.querySelector(".close-btn").addEventListener("click", () => {
+  document.getElementById("shareModal").style.display = "none";
 });
 
-// 共有リンクをコピー
-copyBtn.addEventListener("click", () => {
-  shareLinkInput.select();
-  document.execCommand("copy");
-  copyBtn.textContent = "Copied!";
-  setTimeout(() => {
-    copyBtn.textContent = "Copy Link";
-  }, 2000);
-});
-
-// モーダル外クリックで閉じる
+// Windowの外側をクリックしてモーダルを閉じる
 window.addEventListener("click", (e) => {
-  if (e.target === shareModal) {
-    shareModal.style.display = "none";
+  if (e.target == document.getElementById("shareModal")) {
+    document.getElementById("shareModal").style.display = "none";
   }
 });
 
-// ユーザーID生成
-function generateUserId() {
-  return 'user_' + Math.random().toString(36).substr(2, 9);
-}
+// コピーボタンの機能
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const shareLink = document.getElementById("shareLink");
+  shareLink.select();
+  document.execCommand("copy");
+  alert("Link copied to clipboard!");
+});
 
-// ユーザーデータ（過去30日分）を収集
-function collectUserData() {
-  const userData = {};
+// URLパラメータから共有データをロード
+window.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const shareParam = urlParams.get("share");
   
-  // 基本情報
-  userData.title = pageTitle.value || "Brain Hacker User";
-  
-  // 過去30日間のデータを収集
-  const recordData = {};
-  for (let i = 0; i < 30; i++) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-    const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    const dataKey = `brainhack-${dateKey}`;
-    const data = localStorage.getItem(dataKey);
-    
-    if (data) {
-      // チェックボックスの分析を行う
-      const stats = analyzeCheckboxes(dataKey);
-      recordData[dateKey] = {
-        completionRate: stats.completion,
-        totalTasks: stats.total,
-        completedTasks: stats.completed
-      };
+  if (shareParam) {
+    try {
+      const decodedData = JSON.parse(atob(shareParam));
+      
+      // タイトルを設定
+      if (decodedData.title) {
+        document.getElementById("pageTitle").value = decodedData.title;
+      }
+      
+      // グリッドデータを復元
+      if (decodedData.data) {
+        decodedData.data.forEach(data => {
+          const cell = document.querySelector(`.cell[data-row='${data.row}'][data-col='${data.col}']`);
+          if (!cell) return;
+          
+          const editable = cell.querySelector(".editable");
+          const img = cell.querySelector("img");
+          
+          editable.innerHTML = typeof data.html === 'string' ? data.html : "";
+          editable.style.fontSize = data.fontSize;
+          editable.style.alignItems = data.alignItems;
+          editable.style.justifyContent = data.justifyContent;
+          editable.style.textAlign = data.textAlign;
+          
+          cell.style.backgroundColor = data.bgColor;
+          cell.style.display = data.display;
+          cell.style.gridRow = data.gridRow;
+          cell.style.gridColumn = data.gridColumn;
+          
+          if (data.imgSrc && data.imgSrc.startsWith("data:image/")) {
+            img.src = data.imgSrc;
+            img.style.display = 'block';
+          }
+          
+          editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
+            cb.checked = cb.hasAttribute("checked");
+            const sp = cb.nextElementSibling;
+            if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
+          });
+        });
+      }
+      
+      // URLからパラメータを削除する
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+    } catch (err) {
+      console.error("Failed to load shared data:", err);
     }
   }
-  
-
+});
 
 </script>
 </body>
