@@ -373,6 +373,7 @@ function saveState() {
 }
 
 function restoreState() {
+function restoreState() {
   let state = localStorage.getItem(`brainhack-${getTodayKey()}`);
   if (!state) {
     const yState = localStorage.getItem(`brainhack-${getYesterdayKey()}`);
