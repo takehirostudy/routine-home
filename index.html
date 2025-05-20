@@ -633,6 +633,93 @@ document.getElementById("resetBtn").addEventListener("click", () => {
     location.reload();
   }
 });
+// === シェア機能 ===
+// モーダル操作
+const shareModal = document.getElementById("shareModal");
+const shareBtn = document.getElementById("shareBtn");
+const closeBtn = document.querySelector(".close-btn");
+const copyBtn = document.getElementById("copyBtn");
+const shareLinkInput = document.getElementById("shareLink");
+
+// モーダル表示
+shareBtn.addEventListener("click", () => {
+  // 現在のBrainHackerの状態を取得
+  const state = localStorage.getItem(`brainhack-${getTodayKey()}`);
+  const title = document.getElementById("pageTitle").value;
+  
+  // Base64エンコードして共有データを作成
+  const shareData = btoa(JSON.stringify({
+    title: title,
+    state: state,
+    date: getTodayKey()
+  }));
+  
+  // 共有URLを生成
+  const shareUrl = `${window.location.origin}${window.location.pathname}?share=${shareData}`;
+  
+  // 入力フィールドに表示
+  shareLinkInput.value = shareUrl;
+  
+  // モーダルを表示
+  shareModal.style.display = "block";
+});
+
+// モーダルを閉じる
+closeBtn.addEventListener("click", () => {
+  shareModal.style.display = "none";
+});
+
+// 外側クリックでもモーダルを閉じる
+window.addEventListener("click", (e) => {
+  if (e.target === shareModal) {
+    shareModal.style.display = "none";
+  }
+});
+
+// リンクをコピー
+copyBtn.addEventListener("click", () => {
+  shareLinkInput.select();
+  document.execCommand("copy");
+  // 代替方法（execCommandが非推奨の場合）
+  // navigator.clipboard.writeText(shareLinkInput.value);
+  
+  // コピー完了メッセージ
+  const originalText = copyBtn.textContent;
+  copyBtn.textContent = "Copied!";
+  setTimeout(() => {
+    copyBtn.textContent = originalText;
+  }, 2000);
+});
+
+// 共有リンクからの読み込み
+function loadSharedData() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const shareData = urlParams.get("share");
+  
+  if (shareData) {
+    try {
+      const decodedData = JSON.parse(atob(shareData));
+      
+      if (decodedData.title) {
+        document.getElementById("pageTitle").value = decodedData.title;
+        localStorage.setItem("pageTitle", decodedData.title);
+      }
+      
+      if (decodedData.state) {
+        localStorage.setItem(`brainhack-${getTodayKey()}`, decodedData.state);
+        restoreState();
+      }
+      
+      // パラメータをクリア（オプション）
+      // window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (e) {
+      console.error("共有データの読み込みに失敗しました", e);
+    }
+  }
+}
+
+// ページ読み込み時に共有データを確認
+window.addEventListener("DOMContentLoaded", loadSharedData);
 </script>
 </body>
 </html>
