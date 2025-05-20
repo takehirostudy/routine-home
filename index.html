@@ -620,6 +620,98 @@ document.getElementById("resetBtn").addEventListener("click", () => {
     location.reload();
   }
 });
+
+// === データ共有機能 ===
+// シェアモーダル関連
+const shareModal = document.getElementById("shareModal");
+const shareBtn = document.getElementById("shareBtn");
+const closeBtn = document.querySelector(".close-btn");
+const copyBtn = document.getElementById("copyBtn");
+const shareLinkInput = document.getElementById("shareLink");
+
+// シェアモーダルを開く
+shareBtn.addEventListener("click", () => {
+  // ユーザーIDを生成または取得
+  let userId = localStorage.getItem("brainhack-user-id");
+  if (!userId) {
+    userId = generateUserId();
+    localStorage.setItem("brainhack-user-id", userId);
+  }
+  
+  // 過去30日間のデータを収集
+  const userData = collectUserData();
+  
+  // 共有データを作成
+  const shareData = {
+    userId: userId,
+    username: pageTitle.value || "Brain Hacker User",
+    data: userData,
+    timestamp: new Date().toISOString()
+  };
+  
+  // データをエンコード
+  const encodedData = btoa(JSON.stringify(shareData));
+  const shareLink = `${window.location.origin + window.location.pathname}?share=${encodedData}`;
+  
+  // モーダルに表示
+  shareLinkInput.value = shareLink;
+  shareModal.style.display = "block";
+});
+
+// モーダルを閉じる
+closeBtn.addEventListener("click", () => {
+  shareModal.style.display = "none";
+});
+
+// 共有リンクをコピー
+copyBtn.addEventListener("click", () => {
+  shareLinkInput.select();
+  document.execCommand("copy");
+  copyBtn.textContent = "Copied!";
+  setTimeout(() => {
+    copyBtn.textContent = "Copy Link";
+  }, 2000);
+});
+
+// モーダル外クリックで閉じる
+window.addEventListener("click", (e) => {
+  if (e.target === shareModal) {
+    shareModal.style.display = "none";
+  }
+});
+
+// ユーザーID生成
+function generateUserId() {
+  return 'user_' + Math.random().toString(36).substr(2, 9);
+}
+
+// ユーザーデータ（過去30日分）を収集
+function collectUserData() {
+  const userData = {};
+  
+  // 基本情報
+  userData.title = pageTitle.value || "Brain Hacker User";
+  
+  // 過去30日間のデータを収集
+  const recordData = {};
+  for (let i = 0; i < 30; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const dataKey = `brainhack-${dateKey}`;
+    const data = localStorage.getItem(dataKey);
+    
+    if (data) {
+      // チェックボックスの分析を行う
+      const stats = analyzeCheckboxes(dataKey);
+      recordData[dateKey] = {
+        completionRate: stats.completion,
+        totalTasks: stats.total,
+        completedTasks: stats.completed
+      };
+    }
+  }
+  
 </script>
 </body>
 </html>
