@@ -623,26 +623,36 @@ document.getElementById("resetBtn").addEventListener("click", () => {
 
 // === シェア機能 ===
 document.getElementById("shareBtn").addEventListener("click", () => {
-  // 現在のデータを取得してJSONに変換
-  const data = localStorage.getItem(`brainhack-${getTodayKey()}`);
-  if (!data) {
-    alert("No data to share!");
-    return;
+  try {
+    // 現在のデータを取得
+    const data = localStorage.getItem(`brainhack-${getTodayKey()}`);
+    if (!data) {
+      alert("共有するデータがありません！");
+      return;
+    }
+    
+    // タイトルを含めて共有データを作成
+    const shareData = {
+      title: document.getElementById("pageTitle").value,
+      date: getTodayKey(),
+      data: JSON.parse(data)
+    };
+    
+    // データを安全にエンコード (UTF-8対応)
+    const jsonString = JSON.stringify(shareData);
+    const encodedData = encodeURIComponent(jsonString);
+    
+    // シェアリンクを生成
+    const shareLink = `${window.location.origin}${window.location.pathname}?share=${encodedData}`;
+    
+    // シェアリンクをモーダルに表示
+    document.getElementById("shareLink").value = shareLink;
+    document.getElementById("shareModal").style.display = "block";
+    console.log("シェアリンク生成完了:", shareLink.substring(0, 100) + "...");
+  } catch (error) {
+    console.error("シェアリンク生成エラー:", error);
+    alert("シェアリンクの生成中にエラーが発生しました: " + error.message);
   }
-  
-  // タイトルを含めて共有データを作成
-  const shareData = {
-    title: document.getElementById("pageTitle").value,
-    date: getTodayKey(),
-    data: JSON.parse(data)
-  };
-  
-  // Base64エンコードで共有データを生成
-  const shareLink = `${window.location.origin}${window.location.pathname}?share=${btoa(JSON.stringify(shareData))}`;
-  
-  // シェアリンクをモーダルに表示
-  document.getElementById("shareLink").value = shareLink;
-  document.getElementById("shareModal").style.display = "block";
 });
 
 // モーダルの閉じるボタン
@@ -660,27 +670,48 @@ window.addEventListener("click", (e) => {
 // コピーボタンの機能
 document.getElementById("copyBtn").addEventListener("click", () => {
   const shareLink = document.getElementById("shareLink");
-  shareLink.select();
-  document.execCommand("copy");
-  alert("Link copied to clipboard!");
+  try {
+    // モダンなクリップボード API を使用
+    navigator.clipboard.writeText(shareLink.value)
+      .then(() => {
+        alert("リンクをクリップボードにコピーしました！");
+      })
+      .catch(err => {
+        // フォールバック：従来の方法
+        shareLink.select();
+        document.execCommand("copy");
+        alert("リンクをクリップボードにコピーしました！");
+      });
+  } catch (err) {
+    console.error("コピーエラー:", err);
+    alert("コピーできませんでした。手動でコピーしてください。");
+  }
 });
 
 // URLパラメータから共有データをロード
 window.addEventListener("DOMContentLoaded", () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const shareParam = urlParams.get("share");
-  
-  if (shareParam) {
-    try {
-      const decodedData = JSON.parse(atob(shareParam));
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const shareParam = urlParams.get("share");
+    
+    if (shareParam) {
+      console.log("共有データを検出しました。復元を試みます...");
+      
+      // データをデコード
+      const decodedJson = decodeURIComponent(shareParam);
+      const decodedData = JSON.parse(decodedJson);
+      
+      console.log("復元されたデータ:", decodedData.title, decodedData.date);
       
       // タイトルを設定
       if (decodedData.title) {
         document.getElementById("pageTitle").value = decodedData.title;
+        localStorage.setItem("pageTitle", decodedData.title);
       }
       
       // グリッドデータを復元
-      if (decodedData.data) {
+      if (decodedData.data && Array.isArray(decodedData.data)) {
+        // グリッドセルを復元
         decodedData.data.forEach(data => {
           const cell = document.querySelector(`.cell[data-row='${data.row}'][data-col='${data.col}']`);
           if (!cell) return;
@@ -689,35 +720,50 @@ window.addEventListener("DOMContentLoaded", () => {
           const img = cell.querySelector("img");
           
           editable.innerHTML = typeof data.html === 'string' ? data.html : "";
-          editable.style.fontSize = data.fontSize;
-          editable.style.alignItems = data.alignItems;
-          editable.style.justifyContent = data.justifyContent;
-          editable.style.textAlign = data.textAlign;
+          editable.style.fontSize = data.fontSize || "";
+          editable.style.alignItems = data.alignItems || "";
+          editable.style.justifyContent = data.justifyContent || "";
+          editable.style.textAlign = data.textAlign || "";
           
-          cell.style.backgroundColor = data.bgColor;
-          cell.style.display = data.display;
-          cell.style.gridRow = data.gridRow;
-          cell.style.gridColumn = data.gridColumn;
+          cell.style.backgroundColor = data.bgColor || "";
+          cell.style.display = data.display || "flex";
+          cell.style.gridRow = data.gridRow || "";
+          cell.style.gridColumn = data.gridColumn || "";
           
           if (data.imgSrc && data.imgSrc.startsWith("data:image/")) {
             img.src = data.imgSrc;
             img.style.display = 'block';
+          } else {
+            img.src = "";
+            img.style.display = 'none';
           }
           
+          // チェックボックスの状態を復元
           editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
             cb.checked = cb.hasAttribute("checked");
             const sp = cb.nextElementSibling;
             if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
+            
+            // イベントリスナーを再設定
+            cb.addEventListener("change", () => {
+              if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
+              saveState();
+            });
           });
         });
+        
+        // 状態を保存
+        localStorage.setItem(`brainhack-${getTodayKey()}`, JSON.stringify(decodedData.data));
       }
       
-      // URLからパラメータを削除する
+      // URLからパラメータを削除して履歴を整理
       window.history.replaceState({}, document.title, window.location.pathname);
+      console.log("共有データの復元が完了しました");
       
-    } catch (err) {
-      console.error("Failed to load shared data:", err);
     }
+  } catch (err) {
+    console.error("共有データの読み込みに失敗しました:", err);
+    alert("共有データの読み込みに失敗しました: " + err.message);
   }
 });
 
