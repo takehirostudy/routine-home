@@ -214,6 +214,7 @@
       float: right;
     }
   </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -772,6 +773,73 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 });
+
+// === Share Modal 機能 ===
+document.getElementById("shareBtn").addEventListener("click", () => {
+  // データの取得
+  const state = [...document.querySelectorAll(".cell")].map(cell => {
+    const editable = cell.querySelector(".editable");
+    const img = cell.querySelector("img");
+    editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
+      cb.checked ? cb.setAttribute("checked", "checked") : cb.removeAttribute("checked");
+    });
+    
+    // 必要最小限のデータだけを抽出
+    const cellData = {
+      r: cell.dataset.row,
+      c: cell.dataset.col,
+      h: editable.innerHTML,
+      f: editable.style.fontSize || "",
+      b: cell.style.backgroundColor || "",
+      d: cell.style.display || "",
+      gr: cell.style.gridRow || "",
+      gc: cell.style.gridColumn || "",
+      a: editable.style.textAlign || ""
+    };
+    
+    // 画像がある場合のみ含める
+    if (img.src && img.src !== "undefined" && img.src !== "null" && img.src.startsWith("data:image/")) {
+      cellData.i = img.src;
+    }
+    
+    return cellData;
+  });
+  
+  // 圧縮用のデータ構造
+  const shareData = {
+    t: document.getElementById("pageTitle").value,
+    d: getTodayKey(),
+    c: state.filter(c => c.h || c.i || c.b || c.gr) // 空のセルは除外
+  };
+  
+  // データをJSON文字列に変換して圧縮
+  const jsonData = JSON.stringify(shareData);
+  
+  // LZStringライブラリを使用して圧縮
+  const compressedData = LZString.compressToEncodedURIComponent(jsonData);
+  
+  // 共有リンクを設定
+  const shareModal = document.getElementById("shareModal");
+  const shareLink = document.getElementById("shareLink");
+  shareLink.value = `${window.location.origin}${window.location.pathname.replace("index.html", "record.html")}?data=${compressedData}`;
+  
+  // モーダルを表示
+  shareModal.style.display = "block";
+});
+
+// モーダルのクローズボタン
+document.querySelector(".close-btn").addEventListener("click", () => {
+  document.getElementById("shareModal").style.display = "none";
+});
+
+// コピーボタン
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const shareLink = document.getElementById("shareLink");
+  shareLink.select();
+  document.execCommand("copy");
+  alert("リンクをコピーしました！");
+});
+
 </script>
 </body>
 </html>

@@ -252,6 +252,7 @@
       margin-right: 5px;
     }
   </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -1021,3 +1022,102 @@ existingContents.forEach(content => content.remove());
 </div>
 </body>
 </html>
+
+document.getElementById("addUserBtn").addEventListener("click", () => {
+  const sharedLink = prompt("共有リンクを貼り付けてください:");
+  if (!sharedLink) return;
+  
+  try {
+    // URLからデータパラメータを抽出
+    const url = new URL(sharedLink);
+    const compressedData = url.searchParams.get('data');
+    
+    if (!compressedData) {
+      alert("有効な共有リンクではありません");
+      return;
+    }
+    
+    // データを解凍して処理（loadSharedDataと同様の処理）
+    const jsonData = LZString.decompressFromEncodedURIComponent(compressedData);
+    const sharedData = JSON.parse(jsonData);
+    
+    // ここでデータを処理（上記のloadSharedData関数の中身と同じ処理）
+    // ...
+    
+    alert("ユーザーデータを追加しました");
+  } catch (error) {
+    console.error("データの読み込みに失敗しました", error);
+    alert("共有データの読み込みに失敗しました");
+  }
+});
+
+// === 共有データ読み込み機能 ===
+function loadSharedData() {
+  // URLからデータパラメータを取得
+  const urlParams = new URLSearchParams(window.location.search);
+  const compressedData = urlParams.get('data');
+  
+  if (!compressedData) return;
+  
+  try {
+    // データを解凍
+    const jsonData = LZString.decompressFromEncodedURIComponent(compressedData);
+    const sharedData = JSON.parse(jsonData);
+    
+    // タイトルを設定
+    if (sharedData.t) {
+      document.getElementById("pageTitle").value = sharedData.t;
+    }
+    
+    // セルデータを復元
+    sharedData.c.forEach(data => {
+      const cell = document.querySelector(`.cell[data-row='${data.r}'][data-col='${data.c}']`);
+      if (!cell) return;
+      
+      const editable = cell.querySelector(".editable");
+      const img = cell.querySelector("img");
+      
+      // HTMLコンテンツを設定
+      if (data.h) editable.innerHTML = data.h;
+      
+      // スタイルを設定
+      if (data.f) editable.style.fontSize = data.f;
+      if (data.b) cell.style.backgroundColor = data.b;
+      if (data.d) cell.style.display = data.d;
+      if (data.gr) cell.style.gridRow = data.gr;
+      if (data.gc) cell.style.gridColumn = data.gc;
+      if (data.a) editable.style.textAlign = data.a;
+      
+      // 画像を設定
+      if (data.i) {
+        img.src = data.i;
+        img.style.display = 'block';
+      }
+      
+      // チェックボックスのイベントリスナーを再設定
+      editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
+        cb.checked = cb.hasAttribute("checked");
+        const sp = cb.nextElementSibling;
+        if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
+        cb.addEventListener("change", () => {
+          if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
+          saveState();
+        });
+      });
+    });
+    
+    // 状態を保存
+    saveState();
+    
+    // URLからデータパラメータを削除（オプション）
+    window.history.replaceState({}, document.title, window.location.pathname);
+    
+    alert("共有データを読み込みました");
+  } catch (error) {
+    console.error("データの読み込みに失敗しました", error);
+    alert("共有データの読み込みに失敗しました");
+  }
+}
+
+// ページ読み込み時に共有データがあれば読み込む
+window.addEventListener("DOMContentLoaded", loadSharedData);
