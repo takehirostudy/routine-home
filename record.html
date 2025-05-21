@@ -252,7 +252,6 @@
       margin-right: 5px;
     }
   </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -704,65 +703,72 @@ function getHistoryData() {
   return history;
 }
     
+    // Add User ボタンの処理
+    document.querySelector('.add-user-btn').addEventListener('click', () => {
+      const userName = prompt('Enter the share link or user name:');
+      if (!userName) return;
+      
+      alert(`User "${userName}" will be added when sharing functionality is implemented.`);
+    });
+    
+    // ページロード時に自分（you）のデータを読み込む
+    loadUserData('you');
+// モーダル関連の要素
+const addUserModal = document.getElementById('add-user-modal');
+const shareLinkInput = document.getElementById('share-link-input');
+const cancelAddUserBtn = document.getElementById('cancel-add-user');
+const confirmAddUserBtn = document.getElementById('confirm-add-user');
+
 // Add Userボタン処理を更新
 document.querySelector('.add-user-btn').addEventListener('click', () => {
-  const shareLink = prompt('Enter the share link provided by another user:');
-  if (!shareLink) return;
-  
-  try {
-    // 共有リンクを解析してユーザーデータを追加
-    addUserFromShareLink(shareLink);
-  } catch (error) {
-    console.error('Error processing share link:', error);
-    alert('Invalid share link. Please try again with a valid link.');
+  // モーダルを表示
+  addUserModal.style.display = 'flex';
+  shareLinkInput.value = '';
+  shareLinkInput.focus();
+});
+
+// キャンセルボタン処理
+cancelAddUserBtn.addEventListener('click', () => {
+  addUserModal.style.display = 'none';
+});
+
+// 確認ボタン処理
+confirmAddUserBtn.addEventListener('click', () => {
+  const shareLink = shareLinkInput.value.trim();
+  if (!shareLink) {
+    alert('Please enter a valid share link');
+    return;
   }
+  
+  // 共有リンクを解析してユーザーデータを追加
+  addUserFromShareLink(shareLink);
+  addUserModal.style.display = 'none';
 });
 
 // 共有リンクからユーザーを追加する関数
 function addUserFromShareLink(shareLink) {
-  let userData;
-  
   try {
-    // リンク形式に応じて処理を分岐
+    // 共有リンクからデータを解析
+    // 実際の実装ではここで適切なデコードやAPI呼び出しを行います
+    // 現段階では簡易的な実装としてBase64エンコーディングを想定
+    
+    // 例: brainhack://share?data=eyJ1c2VybmFtZSI6InVzZXJYIiwiZGF0YSI6ey4uLn19
+    
+    // URLからデータ部分を抽出
+    let userData;
+    
     if (shareLink.startsWith('brainhack://share?data=')) {
-      // 内部形式のリンク (Base64エンコード)
       const base64Data = shareLink.replace('brainhack://share?data=', '');
       const jsonStr = atob(base64Data);
       userData = JSON.parse(jsonStr);
-    } else if (shareLink.includes('data=')) {
-      // URL形式のリンク (LZ-String圧縮形式)
-      // URLオブジェクトに変換を試みる
-      let url;
-      try {
-        url = new URL(shareLink);
-      } catch (e) {
-        // URLパース失敗時はクエリ部分だけを取り出す
-        const queryPart = shareLink.split('?')[1];
-        if (queryPart) {
-          url = { searchParams: new URLSearchParams(queryPart) };
-        } else {
-          throw new Error('Invalid URL format');
-        }
-      }
-      
-      const compressedData = url.searchParams.get('data');
-      if (!compressedData) {
-        throw new Error('No data parameter found');
-      }
-      
-      // LZ-String形式のデータを解凍
-      const jsonData = LZString.decompressFromEncodedURIComponent(compressedData);
-      const originalData = JSON.parse(jsonData);
-      
-      // Brain Hackerの元データを共有ユーザー形式に変換
-      userData = convertBrainHackerDataToUserData(originalData);
     } else {
-      throw new Error('Unrecognized share link format');
-    }
-    
-    // ユーザーデータが正しく取得できたか確認
-    if (!userData || !userData.username) {
-      throw new Error('Invalid user data');
+      // 別の形式の共有リンクの場合はここで処理
+      // 今回はデモ用に仮データを生成
+      userData = {
+        username: 'user' + Math.floor(Math.random() * 1000),
+        displayName: 'User ' + Math.floor(Math.random() * 1000),
+        data: generateMockUserData()
+      };
     }
     
     // 既存のユーザーリストを取得
@@ -788,146 +794,230 @@ function addUserFromShareLink(shareLink) {
     alert(`User "${userData.displayName || userData.username}" has been added successfully!`);
   } catch (error) {
     console.error('Error adding user:', error);
-    alert(`Error adding user: ${error.message || 'Unknown error'}`);
+    alert('Invalid share link. Please try again with a valid link.');
   }
 }
 
-// Brain HackerのURLデータをユーザーデータ形式に変換する関数
-function convertBrainHackerDataToUserData(originalData) {
-  // タイトルから表示名を抽出
-  const displayName = originalData.t || 'Shared Brain Hacker';
+// ユーザータブを追加する関数
+function addUserTab(userData) {
+  const userTabs = document.getElementById('user-tabs');
+  const addUserBtn = document.querySelector('.add-user-btn');
   
-  // 日付データの処理のためのユーティリティ
-  function getTodayKey() {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  // タブがすでに存在するか確認
+  const existingTab = document.querySelector(`.tab[data-user="${userData.username}"]`);
+  if (existingTab) {
+    // タブが既に存在する場合は更新しない
+    return;
   }
   
-  function getDateKey(daysAgo) {
-    const date = new Date();
-    date.setDate(date.getDate() - daysAgo);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-  }
+  // 新しいタブを作成
+  const newTab = document.createElement('div');
+  newTab.className = 'tab';
+  newTab.dataset.user = userData.username;
+  newTab.textContent = userData.displayName || userData.username;
   
-  // チェックボックスの完了状況を解析
-  function analyzeCheckboxes(cells) {
-    let totalCheckboxes = 0;
-    let completedCheckboxes = 0;
-    
-    cells.forEach(cellData => {
-      if (!cellData.h) return; // HTMLなし
-      
-      // HTML内のチェックボックスを解析するための一時的な要素
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = cellData.h;
-      
-      // チェックボックスを検索
-      const checkboxes = tempDiv.querySelectorAll('input[type="checkbox"]');
-      totalCheckboxes += checkboxes.length;
-      
-      // チェック済みのボックスをカウント
-      checkboxes.forEach(checkbox => {
-        if (checkbox.hasAttribute('checked')) {
-          completedCheckboxes++;
-        }
-      });
-    });
-    
-    const completionRate = totalCheckboxes > 0 ? Math.round((completedCheckboxes / totalCheckboxes) * 100) : 0;
-    
-    return {
-      total: totalCheckboxes,
-      completed: completedCheckboxes,
-      completion: completionRate
-    };
-  }
+  // Add User ボタンの前に挿入
+  userTabs.insertBefore(newTab, addUserBtn);
   
-  // ストリークを解析
-  function analyzeStreaksFromData(cells) {
-    const taskTextMap = new Map(); // タスクテキスト => 出現回数
-    
-    cells.forEach(cellData => {
-      if (!cellData.h) return; // HTMLなし
-      
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = cellData.h;
-      
-      // チェックボックス要素を探す
-      const checkboxSpans = tempDiv.querySelectorAll('span');
-      checkboxSpans.forEach(span => {
-        const checkbox = span.querySelector('input[type="checkbox"]');
-        const textSpan = span.querySelector('span');
-        
-        if (checkbox && textSpan && textSpan.textContent.trim()) {
-          const taskText = textSpan.textContent.trim();
-          
-          // タスクの出現回数をカウント
-          if (!taskTextMap.has(taskText)) {
-            taskTextMap.set(taskText, 1);
-          } else {
-            taskTextMap.set(taskText, taskTextMap.get(taskText) + 1);
-          }
-        }
-      });
-    });
-    
-    // モックストリークデータを生成（実際のデータからは完全なストリーク情報を復元できないため）
-    const streaks = [];
-    
-    taskTextMap.forEach((count, task) => {
-      if (count >= 2) { // 少なくとも2回出現したタスクのみ
-        streaks.push({
-          task: task,
-          streak: Math.min(count * 2, 30), // 出現回数に基づく近似値
-          active: Math.random() > 0.3 // ランダムなアクティブ状態
-        });
-      }
-    });
-    
-    return streaks.sort((a, b) => b.streak - a.streak);
-  }
+  // タブコンテンツを作成
+  const tabContent = document.createElement('div');
+  tabContent.className = 'tab-content';
+  tabContent.id = `tab-${userData.username}`;
   
-  // 履歴データを生成
-  function generateHistoryData() {
-    const history = [];
-    for (let i = 0; i < 14; i++) {
-      const dateKey = getDateKey(i);
+  // タブコンテンツの中身を作成
+  tabContent.innerHTML = `
+    <div class="stats-container">
+      <div class="stat-card">
+        <h3>Today's Completion</h3>
+        <div class="stat-value">${userData.data.today.completion}%</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${userData.data.today.completion}%"></div>
+        </div>
+        <div>${userData.data.today.completed}/${userData.data.today.total} tasks completed</div>
+      </div>
       
-      // 実際のデータからは履歴を完全に復元できないため、ランダムな完了率で代用
-      const completion = Math.floor(Math.random() * 61) + 40; // 40-100%のランダム値
+      <div class="stat-card">
+        <h3>Yesterday's Completion</h3>
+        <div class="stat-value">${userData.data.yesterday.completion}%</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${userData.data.yesterday.completion}%"></div>
+        </div>
+        <div>${userData.data.yesterday.completed}/${userData.data.yesterday.total} tasks completed</div>
+      </div>
       
-      history.push({
-        date: dateKey,
-        completion: completion
-      });
-    }
-    return history;
-  }
+      <div class="stat-card">
+        <h3>7-Day Average</h3>
+        <div class="stat-value">${userData.data.weeklyAverage}%</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${userData.data.weeklyAverage}%"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="streak-container">
+      <div class="streak-title">Continuous Streaks</div>
+      <div class="streak-items">
+        ${generateStreakHTML(userData.data.streaks)}
+      </div>
+    </div>
+    
+    <div class="history-container">
+      <div class="history-title">History</div>
+      <div class="history-cards">
+        ${generateHistoryHTML(userData.data.history)}
+      </div>
+    </div>
+  `;
   
-  // セルデータを解析
-  const cells = originalData.c || [];
-  const todayStats = analyzeCheckboxes(cells);
+  // コンテナに追加
+  document.querySelector('.container').appendChild(tabContent);
   
-  // ユーザーデータを構築
-  const userData = {
-    username: 'shared_' + Math.random().toString(36).substring(2, 10), // ランダムなユーザーID
-    displayName: displayName,
-    data: {
-      today: {
-        completion: todayStats.completion,
-        total: todayStats.total,
-        completed: todayStats.completed
-      },
-      yesterday: {
-        completion: Math.floor(Math.random() * 61) + 40, // 40-100%のランダム値
-        total: Math.max(5, Math.floor(todayStats.total * 0.8)),
-        completed: Math.max(2, Math.floor(todayStats.completed * 0.8))
-      },
-      weeklyAverage: Math.floor(todayStats.completion * 0.9), // 今日の90%と仮定
-      streaks: analyzeStreaksFromData(cells),
-      history: generateHistoryData()
-    }
-  };
-  
-  return userData;
+  // タブクリックイベントを追加
+  newTab.addEventListener('click', () => {
+    // アクティブなタブを切り替え
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    newTab.classList.add('active');
+    
+    // タブコンテンツの表示切り替え
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    tabContent.classList.add('active');
+  });
 }
+
+// モックユーザーデータを生成する関数
+function generateMockUserData() {
+  // 今日の完了率（ランダム）
+  const todayCompletion = Math.floor(Math.random() * 101);
+  const todayTotal = Math.floor(Math.random() * 20) + 5;
+  const todayCompleted = Math.round((todayCompletion / 100) * todayTotal);
+  
+  // 昨日の完了率（ランダム）
+  const yesterdayCompletion = Math.floor(Math.random() * 101);
+  const yesterdayTotal = Math.floor(Math.random() * 20) + 5;
+  const yesterdayCompleted = Math.round((yesterdayCompletion / 100) * yesterdayTotal);
+  
+  // 週間平均
+  const weeklyAverage = Math.floor((todayCompletion + yesterdayCompletion + Math.random() * 100 * 5) / 7);
+  
+  // ストリーク
+  const streaks = [];
+  const streakTasks = ['朝のウォーキング', '水を2リットル飲む', '読書30分', 'ビタミンを摂る', 'ストレッチ'];
+  
+  for (let i = 0; i < 5; i++) {
+    streaks.push({
+      task: streakTasks[i],
+      streak: Math.floor(Math.random() * 30) + 1,
+      active: Math.random() > 0.3
+    });
+  }
+  
+  // 履歴
+  const history = [];
+  for (let i = 0; i < 14; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    
+    history.push({
+      date: dateKey,
+      completion: Math.floor(Math.random() * 101)
+    });
+  }
+  
+  return {
+    today: {
+      completion: todayCompletion,
+      total: todayTotal,
+      completed: todayCompleted
+    },
+    yesterday: {
+      completion: yesterdayCompletion,
+      total: yesterdayTotal,
+      completed: yesterdayCompleted
+    },
+    weeklyAverage: weeklyAverage,
+    streaks: streaks,
+    history: history
+  };
+}
+
+// ストリークHTMLを生成する関数
+function generateStreakHTML(streaks) {
+  if (!streaks || streaks.length === 0) {
+    return '<div class="no-data">No continuous streaks found yet.</div>';
+  }
+  
+  return streaks.map(streak => `
+    <div class="streak-item">
+      <h4 class="streak-item-title">
+        ${streak.task}
+        <span class="streak-count">${streak.streak} days</span>
+      </h4>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${Math.min(100, (streak.streak / 30) * 100)}%; background-color: ${streak.active ? '#4caf50' : '#ff9800'}"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// 履歴HTMLを生成する関数
+function generateHistoryHTML(history) {
+  if (!history || history.length === 0) {
+    return '<div class="no-data">No history data available.</div>';
+  }
+  
+  return history.map(item => {
+    const [year, month, day] = item.date.split('-');
+    const date = new Date(year, month - 1, day);
+    const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+    const dateDisplay = `${month}/${day} (${weekday})`;
+    
+    return `
+      <div class="history-card" data-date="${item.date}">
+        <div class="history-date">${dateDisplay}</div>
+        <div class="history-completion">${item.completion}%</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${item.completion}%"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 保存されたユーザーをロードする関数
+function loadSavedUsers() {
+  try {
+    const savedUsers = JSON.parse(localStorage.getItem('brainhack-shared-users') || '[]');
+    savedUsers.forEach(userData => {
+      addUserTab(userData);
+    });
+  } catch (error) {
+    console.error('Error loading saved users:', error);
+  }
+}
+
+// 初期化時に保存されたユーザーをロード
+loadSavedUsers();
+
+// ユーザーA、ユーザーBの既存のタブを削除
+const existingTabs = document.querySelectorAll('.tab[data-user="userA"], .tab[data-user="userB"]');
+existingTabs.forEach(tab => tab.remove());
+
+// 既存のタブコンテンツを削除
+const existingContents = document.querySelectorAll('#tab-userA, #tab-userB');
+existingContents.forEach(content => content.remove());
+  </script>
+<!-- ユーザー追加モーダル -->
+<div id="add-user-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+  <div style="background-color: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px;">
+    <h3>Add User</h3>
+    <p>Enter the share link provided by another user:</p>
+    <input type="text" id="share-link-input" style="width: 100%; padding: 8px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;">
+    <div style="text-align: right; margin-top: 15px;">
+      <button id="cancel-add-user" style="padding: 8px 15px; background-color: #f1f1f1; border: 1px solid #ccc; border-radius: 4px; margin-right: 10px;">Cancel</button>
+      <button id="confirm-add-user" style="padding: 8px 15px; background-color: #4285f4; color: white; border: none; border-radius: 4px;">Add User</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
