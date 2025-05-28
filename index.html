@@ -258,7 +258,6 @@
     <div class="grid-container" id="grid"></div>
   </div>
 
-  <!-- Share Modal -->
   <div id="shareModal" class="modal">
     <div class="modal-content">
       <span class="close-btn">&times;</span>
@@ -375,6 +374,8 @@ function saveState() {
 
 function restoreState() {
   let state = localStorage.getItem(`brainhack-${getTodayKey()}`);
+  
+  // 今日のデータがない場合、昨日のデータをロード
   if (!state) {
     const yState = localStorage.getItem(`brainhack-${getYesterdayKey()}`);
     if (yState) {
@@ -383,40 +384,63 @@ function restoreState() {
         const temp = document.createElement("div");
         temp.innerHTML = c.html;
         
-        // 太字のチェックボックス項目を削除
-        const filtered = [...temp.childNodes].filter(node => {
-          const cb = node.querySelector?.("input[type='checkbox']");
-          const sp = node.querySelector?.("span");
-          return !(cb && sp?.style.fontWeight === "bold");
-        });
-        
-        // 通常のチェックボックスのチェックと取り消し線をリセット
-        filtered.forEach(node => {
-          const cb = node.querySelector?.("input[type='checkbox']");
-          const sp = node.querySelector?.("span");
-          if (cb && sp && !sp.style.fontWeight.includes("bold")) {
-            cb.removeAttribute("checked");
-            sp.style.textDecoration = "none";
+        // 太字のチェックボックス項目（☑️ check）を削除
+        // ここでは、wrapperのinnerHTMLを直接操作するのではなく、子ノードをフィルタリングして再構築する
+        const filteredNodes = [];
+        [...temp.childNodes].forEach(node => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const checkbox = node.querySelector("input[type='checkbox']");
+            const span = node.querySelector("span");
+            if (checkbox && span && span.style.fontWeight === "bold") {
+              // 太字のチェックボックスは削除
+              return; 
+            } else if (checkbox && span) {
+              // 通常のチェックボックス（✅ check）のチェックと取り消し線をリセット
+              checkbox.removeAttribute("checked");
+              span.style.textDecoration = "none";
+            }
           }
+          filteredNodes.push(node.cloneNode(true)); // フィルタリングしたノードを複製して追加
         });
-        
-        const wrapper = document.createElement("div");
-        filtered.forEach(n => wrapper.appendChild(n.cloneNode(true)));
-        c.html = wrapper.innerHTML;
+
+        // filteredNodesをtemp.innerHTMLに変換
+        const tempWrapper = document.createElement("div");
+        filteredNodes.forEach(node => tempWrapper.appendChild(node));
+        c.html = tempWrapper.innerHTML;
       });
       state = JSON.stringify(parsed);
     }
   }
- if (!state) return;
+
+  // stateが存在しない場合は処理を終了
+  if (!state) return;
+
   const parsed = JSON.parse(state);
   parsed.forEach(data => {
     const cell = document.querySelector(`.cell[data-row='${data.row}'][data-col='${data.col}']`);
+    if (!cell) return; // セルが存在しない場合はスキップ
+    
     const editable = cell.querySelector(".editable");
     const img = cell.querySelector("img");
+    
     editable.innerHTML = typeof data.html === 'string' ? data.html : "";
+    
+    // チェックボックスの状態を復元し、イベントリスナーを設定
     editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
-      cb.checked = cb.hasAttribute("checked");
+      cb.checked = cb.hasAttribute("checked"); // 保存されたchecked属性に基づいて復元
+      const sp = cb.nextElementSibling;
+      if (sp) {
+        sp.style.textDecoration = cb.checked ? "line-through" : "none";
+      }
+      
+      // 既存のイベントリスナーが重複しないように一度削除してから再追加
+      cb.removeEventListener("change", () => { /* noop */ }); // 既存の匿名関数リスナーを特定できないため、実際には削除が難しい場合がある
+      cb.addEventListener("change", () => {
+        if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
+        saveState();
+      });
     });
+
     editable.style.fontSize = data.fontSize;
     editable.style.alignItems = data.alignItems;
     editable.style.justifyContent = data.justifyContent;
@@ -432,15 +456,6 @@ function restoreState() {
       img.src = "";
       img.style.display = 'none';
     }
-    editable.querySelectorAll("input[type='checkbox']").forEach(cb => {
-      cb.checked = cb.hasAttribute("checked");
-      const sp = cb.nextElementSibling;
-      if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
-      cb.addEventListener("change", () => {
-        if (sp) sp.style.textDecoration = cb.checked ? "line-through" : "none";
-        saveState();
-      });
-    });
   });
 }
 
@@ -486,10 +501,12 @@ document.getElementById("insertCheckboxBtn").addEventListener("click", () => {
     const editable = document.querySelector(`.cell[data-row='${r}'][data-col='${c}'] .editable`);
     const wrapper = document.createElement("span");
     wrapper.style.display = "inline-flex";
+    wrapper.style.alignItems = "center"; // チェックボックスとテキストを中央揃え
     const cb = document.createElement("input");
     cb.type = "checkbox";
+    cb.style.marginRight = "5px"; // チェックボックスとテキストの間にスペース
     const span = document.createElement("span");
-    span.textContent = "項目";
+    span.textContent = "task"; // デフォルトテキスト
     span.contentEditable = true;
     cb.addEventListener("change", () => {
       span.style.textDecoration = cb.checked ? "line-through" : "none";
@@ -508,12 +525,14 @@ document.getElementById("insertBoldCheckboxBtn").addEventListener("click", () =>
     const editable = document.querySelector(`.cell[data-row='${r}'][data-col='${c}'] .editable`);
     const wrapper = document.createElement("span");
     wrapper.style.display = "inline-flex";
+    wrapper.style.alignItems = "center"; // チェックボックスとテキストを中央揃え
     const cb = document.createElement("input");
     cb.type = "checkbox";
+    cb.style.marginRight = "5px"; // チェックボックスとテキストの間にスペース
     const span = document.createElement("span");
-    span.textContent = "項目";
+    span.textContent = "task"; // デフォルトテキスト
     span.contentEditable = true;
-    span.style.fontWeight = "bold";
+    span.style.fontWeight = "bold"; // 太字に設定
     cb.addEventListener("change", () => {
       span.style.textDecoration = cb.checked ? "line-through" : "none";
       saveState();
